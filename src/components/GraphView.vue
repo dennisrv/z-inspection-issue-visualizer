@@ -1,8 +1,11 @@
 <template>
-  <v-container>
+  <v-container fluid fill-height>
     <v-row>
-      <v-col class="col-md-12">
-        <cytoscape ref="cy" :config="this.cytoscapeConfig" :preConfig="preConfig" :afterCreated="afterGraphCreated" >
+      <v-col col-3>
+        <v-btn elevation="2" v-on:click="addNode"></v-btn>
+      </v-col>
+      <v-col col-9>
+        <cytoscape ref="cy" :config="this.cytoscapeConfig" :preConfig="preConfig" :afterCreated="afterGraphCreated">
           <cy-element
               v-for="def in this.elements"
               :key="`${def.data.id}`"
@@ -22,7 +25,9 @@ import dagre from "cytoscape-dagre"
 export default {
   name: 'GraphView',
   data: () => ({
-    cytoscapeLayout: {
+    $cy: {},
+    cytoscapeLayout: {},
+    cytoscapeLayoutConfig: {
       name: 'dagre',
       rankDir: 'LR'
     },
@@ -68,12 +73,26 @@ export default {
     // inspired by https://github.com/rcarcasses/vue-cytoscape-cola/blob/master/src/App.vue
     preConfig(cytoscape) {
       cytoscape.use(dagre)
+      // overwrite default height of component
+      let el = document.getElementById('cytoscape-div')
+      el.setAttribute('style', 'height: 95vh')
     },
     async afterGraphCreated(cy) {
       // sometimes the layout is not rendering correctly, this solves it
       // see https://github.com/rcarcasses/vue-cytoscape/issues/17
       await cy.instance
-      cy.layout(this.cytoscapeLayout).run()
+      this.$cy = cy
+      this.$cy.layout(this.cytoscapeLayoutConfig).run()
+    },
+    async addNode() {
+      let n = Math.floor(Math.random() * 10) + 1
+      let newNode = {data: {id: ''+n, label: ''+n}}
+      let newEdge = {data: {id: 'a'+n, source: 'a', target: ''+n}}
+      this.nodes.push(newNode)
+      this.edges.push(newEdge)
+
+      await this.$nextTick()
+      this.$cy.layout(this.cytoscapeLayoutConfig).run()
     }
   },
   created() {

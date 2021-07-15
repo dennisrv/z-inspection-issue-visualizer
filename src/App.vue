@@ -1,14 +1,12 @@
 <template>
   <v-app>
    <!-- Sizes your content based upon application components -->
-    <v-main>
-      <v-container fluid>
-
+    <v-main id="main">
+      <v-container fluid fill-height>
         <!-- If using vue-router -->
         <GraphView></GraphView>
       </v-container>
     </v-main>
-
   </v-app>
 </template>
 
