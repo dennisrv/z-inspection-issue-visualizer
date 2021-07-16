@@ -1,17 +1,17 @@
 <template>
   <v-container fluid fill-height>
     <v-row>
-      <v-col col-3>
-        <v-btn elevation="2" v-on:click="addNode"></v-btn>
-      </v-col>
-      <v-col col-9>
-        <cytoscape ref="cy" :config="this.cytoscapeConfig" :preConfig="preConfig" :afterCreated="afterGraphCreated">
+      <v-col cols="9">
+        <cytoscape ref="cytoscape-component" :config="this.cytoscapeConfig" :preConfig="preConfig" :afterCreated="afterGraphCreated">
           <cy-element
               v-for="def in this.elements"
               :key="`${def.data.id}`"
               :definition="def"
           />
         </cytoscape>
+      </v-col>
+      <v-col cols="3">
+        <v-btn elevation="2" v-on:click="addNode"></v-btn>
       </v-col>
     </v-row>
   </v-container>
@@ -21,12 +21,13 @@
 // change eslint rule according to  https://github.com/vuejs/eslint-plugin-vue/issues/1004#issuecomment-568978285
 // so it does not fail the dev build for this "unused" variable
 import dagre from "cytoscape-dagre"
+import { initialNodes, initialEdges } from '@/plugins/initialGraphData'
 
 export default {
   name: 'GraphView',
   data: () => ({
     $cy: {},
-    cytoscapeLayout: {},
+    loading: true,
     cytoscapeLayoutConfig: {
       name: 'dagre',
       rankDir: 'LR'
@@ -53,16 +54,39 @@ export default {
             'curve-style': 'taxi',
             'taxi-direction': 'horizontal'
           }
+        },
+        {
+          selector: '.principle',
+          style: {
+            'height': '80%',
+            'width': '210%',
+            'background-color': '#7C96ED',
+            'text-wrap': 'wrap',
+            'text-max-width': '130%',
+            'font-size': '18pt'
+          }
+        },
+        {
+          selector: '.requirement',
+          style: {
+            'height': '60%',
+            'width': '160%',
+            'background-color': '#7CEDD3',
+            'text-wrap': 'wrap',
+            'text-max-width': '100%',
+            'font-size': '14pt'
+          }
+        },
+        {
+          selector: '.sub-requirement',
+          style: {
+            'background-color': '#96ED7C'
+          }
         }
       ]
     },
-    nodes: [
-      {data: {id: 'a', label: 'a'}},
-      {data: {id: 'b', label: 'b'}}
-    ],
-    edges: [
-      {data: {id: 'ab', source: 'a', target: 'b'}}
-    ]
+    nodes: initialNodes,
+    edges: initialEdges
   }),
   computed: {
     elements: function() {
@@ -87,16 +111,13 @@ export default {
     async addNode() {
       let n = Math.floor(Math.random() * 10) + 1
       let newNode = {data: {id: ''+n, label: ''+n}}
-      let newEdge = {data: {id: 'a'+n, source: 'a', target: ''+n}}
+      let newEdge = {data: {id: 'a'+n, source: 'fairness', target: ''+n}}
       this.nodes.push(newNode)
       this.edges.push(newEdge)
 
       await this.$nextTick()
       this.$cy.layout(this.cytoscapeLayoutConfig).run()
     }
-  },
-  created() {
-    console.log('created')
   },
 }
 </script>
