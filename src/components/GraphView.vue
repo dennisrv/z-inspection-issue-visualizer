@@ -11,6 +11,7 @@
         </cytoscape>
       </v-col>
       <v-col cols="3">
+        <NewIssueDialog @form-submit="formSubmit"></NewIssueDialog>
         <v-btn elevation="2" v-on:click="addNode"></v-btn>
       </v-col>
     </v-row>
@@ -22,9 +23,13 @@
 // so it does not fail the dev build for this "unused" variable
 import dagre from "cytoscape-dagre"
 import { initialNodes, initialEdges } from '@/plugins/initialGraphData'
+import NewIssueDialog from '@/components/NewIssueDialog'
 
 export default {
   name: 'GraphView',
+  components: {
+    NewIssueDialog
+  },
   data: () => ({
     $cy: {},
     loading: true,
@@ -117,6 +122,9 @@ export default {
 
       await this.$nextTick()
       this.$cy.layout(this.cytoscapeLayoutConfig).run()
+    },
+    formSubmit(formData) {
+      console.log(formData)
     }
   },
 }
