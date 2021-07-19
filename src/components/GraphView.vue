@@ -13,7 +13,7 @@
       </v-col>
       <v-col cols="3">
         <!--    form-submit event is emitted by the component when click on submit happens   -->
-        <NewIssueDialog v-on:form-submit="formSubmit"></NewIssueDialog>
+        <NewIssueDialogButton v-on:newIssue="formSubmit"></NewIssueDialogButton>
       </v-col>
     </v-row>
   </v-container>
@@ -26,12 +26,12 @@ import dagre from "cytoscape-dagre"
 import { initialNodes, initialEdges } from '@/constants/initialGraphData'
 import cytoscapeStyle from "@/constants/cytoscapeStyle";
 
-import NewIssueDialog from '@/components/NewIssueDialog'
+import NewIssueDialogButton from '@/components/NewIssueDialogButton'
 
 export default {
   name: 'GraphView',
   components: {
-    NewIssueDialog
+    NewIssueDialogButton
   },
   data: () => ({
     $cy: {},
