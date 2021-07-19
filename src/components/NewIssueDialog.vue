@@ -12,7 +12,7 @@
           v-bind="attrs"
           v-on="on"
         >
-          Open Dialog
+          New Ethical Issue / Flag
         </v-btn>
       </template>
       <v-card>

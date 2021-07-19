@@ -2,6 +2,7 @@
   <v-container fluid fill-height>
     <v-row>
       <v-col cols="9">
+        <!--    cytoscape core instance is now available at this.$refs['cytoscape-component']    -->
         <cytoscape ref="cytoscape-component" :config="this.cytoscapeConfig" :preConfig="preConfig" :afterCreated="afterGraphCreated">
           <cy-element
               v-for="def in this.elements"
@@ -11,8 +12,8 @@
         </cytoscape>
       </v-col>
       <v-col cols="3">
-        <NewIssueDialog @form-submit="formSubmit"></NewIssueDialog>
-        <v-btn elevation="2" v-on:click="addNode"></v-btn>
+        <!--    form-submit event is emitted by the component when click on submit happens   -->
+        <NewIssueDialog v-on:form-submit="formSubmit"></NewIssueDialog>
       </v-col>
     </v-row>
   </v-container>
@@ -22,7 +23,9 @@
 // change eslint rule according to  https://github.com/vuejs/eslint-plugin-vue/issues/1004#issuecomment-568978285
 // so it does not fail the dev build for this "unused" variable
 import dagre from "cytoscape-dagre"
-import { initialNodes, initialEdges } from '@/plugins/initialGraphData'
+import { initialNodes, initialEdges } from '@/constants/initialGraphData'
+import cytoscapeStyle from "@/constants/cytoscapeStyle";
+
 import NewIssueDialog from '@/components/NewIssueDialog'
 
 export default {
@@ -39,56 +42,7 @@ export default {
     },
     cytoscapeConfig: {
       autoRefreshLayout: true,
-      style: [
-        {
-          selector: 'node',
-          style: {
-            'content': 'data(label)',
-            'height': '50%',
-            'width': '130%',
-            'text-valign': 'center',
-            'text-halign': 'center',
-            'text-wrap': 'wrap',
-            'text-max-width': '80%',
-            'font-size': '11pt'
-          }
-        },
-        {
-          selector: 'edge',
-          style: {
-            'curve-style': 'taxi',
-            'taxi-direction': 'horizontal'
-          }
-        },
-        {
-          selector: '.principle',
-          style: {
-            'height': '80%',
-            'width': '210%',
-            'background-color': '#7C96ED',
-            'text-wrap': 'wrap',
-            'text-max-width': '130%',
-            'font-size': '18pt'
-          }
-        },
-        {
-          selector: '.requirement',
-          style: {
-            'height': '60%',
-            'width': '160%',
-            'background-color': '#7CEDD3',
-            'text-wrap': 'wrap',
-            'text-max-width': '100%',
-            'font-size': '14pt'
-          }
-        },
-        {
-          selector: '.sub-requirement',
-          style: {
-            'background-color': '#96ED7C'
-          }
-        }
-      ]
+      style: cytoscapeStyle
     },
     nodes: initialNodes,
     edges: initialEdges
