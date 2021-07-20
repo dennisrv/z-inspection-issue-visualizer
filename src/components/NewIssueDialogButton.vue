@@ -48,7 +48,7 @@
               <v-col cols="4">
                 <v-autocomplete
                     v-model="formValues.related[n]['principle']"
-                    :items="formOptions.principles"
+                    :items="constant.principles"
                     :label="`Related Ethical Principle ${n}`"
                     dense required
                     :rules="formRules.valueRequiredRule"
@@ -56,8 +56,8 @@
               </v-col>
               <v-col cols="4">
                 <v-autocomplete
-                    v-model="formValues.related[n]['requirement']"
-                    :items="constant.principlesRequirementsMap[formValues.related[n]['principle']]"
+                    v-model="formValues.related[n].requirement"
+                    :items="constant.principlesRequirementsMap[formValues.related[n].principle]"
                     :label="`Related Key Requirement ${n}`"
                     dense required
                     :rules="formRules.valueRequiredRule"
@@ -65,8 +65,8 @@
               </v-col>
               <v-col cols="4">
                 <v-autocomplete
-                    v-model="formValues.related[n]['subRequirement']"
-                    :items="constant.requirementsSubrequirementsMap[formValues.related[n]['requirement']]"
+                    v-model="formValues.related[n].subRequirement"
+                    :items="constant.requirementsSubrequirementsMap[formValues.related[n].requirement]"
                     :label="`Related Sub-Requirement ${n}`"
                     dense required
                     :rules="formRules.valueRequiredRule"
@@ -108,7 +108,7 @@
             :disabled="!valid"
             @click="submitAction()"
           >
-            Save
+            Add
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -126,6 +126,7 @@ export default {
     constant: {
       principlesRequirementsMap: principlesRequirementsMap,
       requirementsSubrequirementsMap: requirementsSubrequirementsMap,
+      principles: ethicalPrinciples,
     },
     formOptions: {
       issueType: [
@@ -138,7 +139,6 @@ export default {
           value: 'flag'
         }
       ],
-      principles: ethicalPrinciples,
     },
     initialFormValues: {
       issueType: null,
@@ -173,12 +173,19 @@ export default {
     },
     addRelated() {
       this.formValues.numRelated += 1
-      this.formValues.related[this.formValues.numRelated] = {}
+      let newEntry = {}
+      newEntry[this.formValues.numRelated] = {
+        principle: null,
+        requirement: null,
+        subRequirement: null
+      }
+      // this part is needed so Vue tracks the changes in formValues.related
+      this.formValues.related = Object.assign({}, this.formValues.related, newEntry)
     },
     submitAction() {
-      this.$refs.issueForm.validate()
       this.dialog = false
       this.$emit('newIssue', this.formValues)
+      this.resetFormValues()
     }
   },
   created() {

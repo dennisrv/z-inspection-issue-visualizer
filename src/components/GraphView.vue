@@ -12,8 +12,8 @@
         </cytoscape>
       </v-col>
       <v-col cols="3">
-        <!--    form-submit event is emitted by the component when click on submit happens   -->
-        <NewIssueDialogButton v-on:newIssue="formSubmit"></NewIssueDialogButton>
+        <!--    newIssue event is emitted by the component when click on submit happens   -->
+        <NewIssueDialogButton v-on:newIssue="addNode"></NewIssueDialogButton>
       </v-col>
     </v-row>
   </v-container>
@@ -25,6 +25,8 @@
 import dagre from "cytoscape-dagre"
 import { initialNodes, initialEdges } from '@/constants/initialGraphData'
 import cytoscapeStyle from "@/constants/cytoscapeStyle";
+
+import { toId, createNode, createEdge } from "@/util/graphUtils";
 
 import NewIssueDialogButton from '@/components/NewIssueDialogButton'
 
@@ -67,19 +69,19 @@ export default {
       this.$cy = cy
       this.$cy.layout(this.cytoscapeLayoutConfig).run()
     },
-    async addNode() {
-      let n = Math.floor(Math.random() * 10) + 1
-      let newNode = {data: {id: ''+n, label: ''+n}}
-      let newEdge = {data: {id: 'a'+n, source: 'fairness', target: ''+n}}
+    async addNode(newNodeData) {
+
+      let id = toId(newNodeData.issueTitle + Math.floor(Math.random() * 1000))
+      let newNode = createNode(newNodeData.issueTitle, newNodeData.issueType, id)
+
+      let newEdges = Object.values(newNodeData.related).map((rel) => createEdge(rel.subRequirement, id))
+
       this.nodes.push(newNode)
-      this.edges.push(newEdge)
+      this.edges.push(...newEdges)
 
       await this.$nextTick()
       this.$cy.layout(this.cytoscapeLayoutConfig).run()
     },
-    formSubmit(formData) {
-      console.log(formData)
-    }
   },
 }
 </script>
