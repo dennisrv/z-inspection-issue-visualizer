@@ -44,33 +44,46 @@
                 ></v-text-field>
               </v-col>
             </v-row>
-            <v-row dense v-for="n in formValues.numRelated" :key="n">
-              <v-col cols="4">
-                <v-autocomplete
-                    v-model="formValues.related[n]['principle']"
-                    :items="constant.principles"
-                    :label="`Related Ethical Principle ${n}`"
-                    dense required
-                    :rules="formRules.valueRequiredRule"
-                ></v-autocomplete>
+            <v-row dense v-for="(item, index) in formValues.related" :key="index">
+              <v-col cols="10" dense>
+                <v-row dense>
+                  <v-col cols="4">
+                    <v-autocomplete
+                        v-model="item.principle"
+                        :items="constant.principles"
+                        :label="`Related Ethical Principle ${index + 1}`"
+                        dense required
+                        :rules="formRules.valueRequiredRule"
+                    ></v-autocomplete>
+                  </v-col>
+                  <v-col cols="4">
+                    <v-autocomplete
+                        v-model="item.requirement"
+                        :items="constant.principlesRequirementsMap[item.principle]"
+                        :label="`Related Key Requirement ${index + 1}`"
+                        dense required
+                        :rules="formRules.valueRequiredRule"
+                    ></v-autocomplete>
+                  </v-col>
+                  <v-col cols="4">
+                    <v-autocomplete
+                        v-model="item.subRequirement"
+                        :items="constant.requirementsSubrequirementsMap[item.requirement]"
+                        :label="`Related Sub-Requirement ${index + 1}`"
+                        dense required
+                        :rules="formRules.valueRequiredRule"
+                    ></v-autocomplete>
+                  </v-col>
+                </v-row>
               </v-col>
-              <v-col cols="4">
-                <v-autocomplete
-                    v-model="formValues.related[n].requirement"
-                    :items="constant.principlesRequirementsMap[formValues.related[n].principle]"
-                    :label="`Related Key Requirement ${n}`"
-                    dense required
-                    :rules="formRules.valueRequiredRule"
-                ></v-autocomplete>
-              </v-col>
-              <v-col cols="4">
-                <v-autocomplete
-                    v-model="formValues.related[n].subRequirement"
-                    :items="constant.requirementsSubrequirementsMap[formValues.related[n].requirement]"
-                    :label="`Related Sub-Requirement ${n}`"
-                    dense required
-                    :rules="formRules.valueRequiredRule"
-                ></v-autocomplete>
+              <v-col cols="2" class="d-flex justify-end" dense>
+                <v-btn
+                    color="error"
+                    x-small fab
+                    @click="deleteRequirement(index)"
+                >
+                  <v-icon>mdi-delete</v-icon>
+                </v-btn>
               </v-col>
             </v-row>
             <v-row dense>
@@ -143,13 +156,13 @@ export default {
     initialFormValues: {
       issueType: null,
       numRelated: 1,
-      related: {
-        1: {
+      related: [
+        {
           principle: null,
           requirement: null,
           subRequirement: null
         }
-      },
+      ],
       issueTitle: null,
       issueDescription: null,
     },
@@ -172,20 +185,25 @@ export default {
       this.formValues = Object.assign({}, this.initialFormValues)
     },
     addRelated() {
-      this.formValues.numRelated += 1
-      let newEntry = {}
-      newEntry[this.formValues.numRelated] = {
-        principle: null,
-        requirement: null,
-        subRequirement: null
-      }
-      // this part is needed so Vue tracks the changes in formValues.related
-      this.formValues.related = Object.assign({}, this.formValues.related, newEntry)
+      this.formValues.related.push(this.createEmptyRelatedItem())
     },
     submitAction() {
       this.dialog = false
       this.$emit('newIssue', this.formValues)
       this.resetFormValues()
+    },
+    deleteRequirement(index) {
+      this.formValues.related.splice(index, 1)
+      if (this.formValues.related.length === 0) {
+        this.formValues.related.push(this.createEmptyRelatedItem())
+      }
+    },
+    createEmptyRelatedItem() {
+      return {
+        principle: null,
+        requirement: null,
+        subRequirement: null
+      }
     }
   },
   created() {
