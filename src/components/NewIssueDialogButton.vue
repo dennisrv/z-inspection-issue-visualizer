@@ -36,6 +36,18 @@
                 </v-radio-group>
               </v-col>
               <v-col cols="12">
+                <v-combobox
+                    v-model="formValues.areas"
+                    :items="formOptions.areas"
+                    label="Related Areas"
+                    multiple
+                    chips
+                    dense
+                ></v-combobox>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="12">
                 <v-text-field
                     dense required
                     label="Title"
@@ -152,10 +164,12 @@ export default {
           value: 'flag'
         }
       ],
+      areas: ['Ethical', 'Social', 'Medical', 'Technical', 'Regulatory'],
     },
     initialFormValues: {
       issueType: null,
       numRelated: 1,
+      areas: [],
       related: [
         {
           principle: null,
