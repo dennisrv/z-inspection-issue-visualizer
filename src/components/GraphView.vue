@@ -1,9 +1,10 @@
 <template>
   <v-container fluid fill-height>
     <v-row>
-      <v-col cols="9">
+      <v-col cols="8" class="grey lighten-5">
         <!--    cytoscape core instance is now available at this.$refs['cytoscape-component']    -->
-        <cytoscape ref="cytoscape-component" :config="this.cytoscapeConfig" :preConfig="preConfig" :afterCreated="afterGraphCreated">
+        <cytoscape ref="cytoscape-component" :config="this.cytoscapeConfig" :preConfig="preConfig"
+                   :afterCreated="afterGraphCreated">
           <cy-element
               v-for="def in this.elements"
               :key="`${def.data.id}`"
@@ -11,9 +12,29 @@
           />
         </cytoscape>
       </v-col>
-      <v-col cols="3">
-        <!--    newIssue event is emitted by the component when click on submit happens   -->
-        <NewIssueDialogButton v-on:newIssue="onNewIssue"></NewIssueDialogButton>
+      <v-col cols="4">
+        <v-row>
+          <v-col cols="12">
+            <!--    newIssue event is emitted by the component when click on submit happens   -->
+            <NewIssueDialogButton v-on:newIssue="onNewIssue"></NewIssueDialogButton>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="12">
+            <v-divider></v-divider>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="12">
+            <IssueDetailsCard
+                title="Selected Issue"
+                submit-button-text="Update"
+                reset-button-text="Reset"
+                :initial-form-values="selectedIssueDetails"
+                :form-values="selectedIssueDetails"
+            ></IssueDetailsCard>
+          </v-col>
+        </v-row>
       </v-col>
     </v-row>
   </v-container>
@@ -23,21 +44,22 @@
 // change eslint rule according to  https://github.com/vuejs/eslint-plugin-vue/issues/1004#issuecomment-568978285
 // so it does not fail the dev build for this "unused" variable
 import dagre from "cytoscape-dagre"
-import { initialNodes, initialEdges } from '@/constants/initialGraphData'
+import {initialNodes, initialEdges} from '@/constants/initialGraphData'
 import cytoscapeStyle from "@/constants/cytoscapeStyle";
 
-import { toId, createNode, createEdge } from "@/util/graphUtils";
+import {toId, createNode, createEdge} from "@/util/graphUtils";
 
 import NewIssueDialogButton from '@/components/NewIssueDialog'
+import IssueDetailsCard, {createEmptyIssueDetails} from '@/components/IssueDetailsCard'
 
 export default {
   name: 'GraphView',
   components: {
-    NewIssueDialogButton
+    NewIssueDialogButton,
+    IssueDetailsCard
   },
   data: () => ({
     $cy: {},
-    loading: true,
     cytoscapeLayoutConfig: {
       name: 'dagre',
       rankDir: 'LR'
@@ -47,10 +69,11 @@ export default {
       style: cytoscapeStyle
     },
     nodes: initialNodes,
-    edges: initialEdges
+    edges: initialEdges,
+    selectedIssueDetails: createEmptyIssueDetails()
   }),
   computed: {
-    elements: function() {
+    elements: function () {
       return this.nodes.concat(this.edges)
     }
   },
@@ -60,7 +83,7 @@ export default {
       cytoscape.use(dagre)
       // overwrite default height of component
       let el = document.getElementById('cytoscape-div')
-      el.setAttribute('style', 'height: 95vh')
+      el.setAttribute('style', 'height: 95vh; back')
     },
     async afterGraphCreated(cy) {
       // sometimes the layout is not rendering correctly, this solves it
@@ -68,19 +91,28 @@ export default {
       await cy.instance
       this.$cy = cy
       this.$cy.layout(this.cytoscapeLayoutConfig).run()
+      this.$cy.on('select', '.issue-node', event => {
+        this.selectedIssueDetails = event.target._private.data.issueDetails
+      })
+      this.$cy.on('unselect', '.issue-node', () => {
+        if (this.$cy.$(':selected').length === 0) {
+          this.selectedIssueDetails = createEmptyIssueDetails()
+        }
+      })
     },
-    async onNewIssue(newNodeData) {
+    onNewIssue(newNodeData) {
 
       let id = toId(newNodeData.issueTitle + Math.floor(Math.random() * 1000))
-      let newNode = createNode(newNodeData.issueTitle, newNodeData.issueType, id)
+      let newNode = createNode(newNodeData.issueTitle, newNodeData.issueType + " issue-node", id)
+      newNode['data']['issueDetails'] = newNodeData
 
       let newEdges = Object.values(newNodeData.related).map((rel) => createEdge(rel.subRequirement, id))
 
       this.nodes.push(newNode)
       this.edges.push(...newEdges)
 
-      await this.$nextTick()
-      this.$cy.layout(this.cytoscapeLayoutConfig).run()
+      // relayout only after the elements are drawn
+      this.$nextTick().then(() => this.$cy.layout(this.cytoscapeLayoutConfig).run())
     },
   },
 }

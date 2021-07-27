@@ -1,12 +1,12 @@
 <template>
   <v-card>
     <v-card-title v-if="title != null">
-      <span class="text-h5">Add new Ethical Issue / Flag</span>
+      <span class="text-h5">{{ title }}</span>
     </v-card-title>
     <v-card-text>
       <v-form ref="issueForm" v-model="valid">
         <v-row dense>
-          <v-col cols="12" >
+          <v-col cols="12">
             <v-radio-group
                 v-model="formValues.issueType"
                 :rules="formRules.typeRules"
@@ -88,7 +88,8 @@
             <v-btn color="accent"
                    @click="addRelated()"
                    small
-            >Additional Principle</v-btn>
+            >Additional Principle
+            </v-btn>
           </v-col>
         </v-row>
         <v-row dense>
@@ -125,7 +126,27 @@
 </template>
 
 <script>
-import {ethicalPrinciples, principlesRequirementsMap, requirementsSubrequirementsMap} from '@/constants/principlesAndRequirements'
+import {
+  ethicalPrinciples,
+  principlesRequirementsMap,
+  requirementsSubrequirementsMap
+} from '@/constants/principlesAndRequirements'
+
+export const createEmptyIssueDetails = function () {
+  return {
+    issueType: null,
+    areas: [],
+    related: [
+      {
+        principle: null,
+        requirement: null,
+        subRequirement: null
+      }
+    ],
+    issueTitle: null,
+    issueDescription: null,
+  }
+}
 
 export default {
   name: 'IssueDetailsCard',
@@ -135,21 +156,7 @@ export default {
     submitButtonText: String,
     initialFormValues: {
       // if no form values are given, we use null for everything
-      default: function() {
-        return {
-          issueType: null,
-          areas: [],
-          related: [
-            {
-              principle: null,
-              requirement: null,
-              subRequirement: null
-            }
-          ],
-          issueTitle: null,
-          issueDescription: null,
-        }
-      }
+      default: createEmptyIssueDetails
     }
   },
   data: () => ({
@@ -180,7 +187,7 @@ export default {
         v => !!v || "Value required"
       ],
     },
-    formValues: {},
+    formValues: {}
   }),
   methods: {
     submitIssue() {
@@ -197,6 +204,8 @@ export default {
     },
     resetFormValues() {
       this.formValues = Object.assign({}, this.initialFormValues)
+      // after reset form should not complain if values are missing (submit is not working anyways)
+      this.$refs.issueForm.resetValidation()
     },
     deleteRequirement(index) {
       this.formValues.related.splice(index, 1)
@@ -212,9 +221,13 @@ export default {
       }
     }
   },
-  created() {
+  watch: {
+    initialFormValues: function () {
+      this.resetFormValues()
+    }
+  },
+  mounted() {
     this.resetFormValues()
   }
 }
-
 </script>
