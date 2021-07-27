@@ -13,7 +13,7 @@
       </v-col>
       <v-col cols="3">
         <!--    newIssue event is emitted by the component when click on submit happens   -->
-        <NewIssueDialogButton v-on:newIssue="addNode"></NewIssueDialogButton>
+        <NewIssueDialogButton v-on:newIssue="onNewIssue"></NewIssueDialogButton>
       </v-col>
     </v-row>
   </v-container>
@@ -28,7 +28,7 @@ import cytoscapeStyle from "@/constants/cytoscapeStyle";
 
 import { toId, createNode, createEdge } from "@/util/graphUtils";
 
-import NewIssueDialogButton from '@/components/NewIssueDialogButton'
+import NewIssueDialogButton from '@/components/NewIssueDialog'
 
 export default {
   name: 'GraphView',
@@ -69,7 +69,7 @@ export default {
       this.$cy = cy
       this.$cy.layout(this.cytoscapeLayoutConfig).run()
     },
-    async addNode(newNodeData) {
+    async onNewIssue(newNodeData) {
 
       let id = toId(newNodeData.issueTitle + Math.floor(Math.random() * 1000))
       let newNode = createNode(newNodeData.issueTitle, newNodeData.issueType, id)
