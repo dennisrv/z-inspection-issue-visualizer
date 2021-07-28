@@ -5,6 +5,10 @@
     </v-card-title>
     <v-card-text>
       <v-form ref="issueForm" v-model="valid">
+        <v-text-field
+            v-model="formValues.id"
+            v-show="false"
+        ></v-text-field>
         <v-row dense>
           <v-col cols="12">
             <v-radio-group
@@ -134,6 +138,7 @@ import {
 
 export const createEmptyIssueDetails = function () {
   return {
+    id: null,
     issueType: null,
     areas: [],
     related: [

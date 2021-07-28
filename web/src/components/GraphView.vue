@@ -32,6 +32,7 @@
                 reset-button-text="Reset"
                 :initial-form-values="selectedIssueDetails"
                 :form-values="selectedIssueDetails"
+                v-on:issueSubmit="onIssueUpdate"
             ></IssueDetailsCard>
           </v-col>
         </v-row>
@@ -100,13 +101,13 @@ export default {
         }
       })
     },
-    onNewIssue(newNodeData) {
+    onNewIssue(newIssueData) {
 
-      let id = toId(newNodeData.issueTitle + Math.floor(Math.random() * 1000))
-      let newNode = createNode(newNodeData.issueTitle, newNodeData.issueType + " issue-node", id)
-      newNode['data']['issueDetails'] = newNodeData
+      let id = toId(newIssueData.issueTitle + Math.floor(Math.random() * 1000))
+      let newNode = createNode(newIssueData.issueTitle, newIssueData.issueType + " issue-node", id)
+      newNode['data']['issueDetails'] = newIssueData
 
-      let newEdges = Object.values(newNodeData.related).map((rel) => createEdge(rel.subRequirement, id))
+      let newEdges = Object.values(newIssueData.related).map((rel) => createEdge(rel.subRequirement, id))
 
       this.nodes.push(newNode)
       this.edges.push(...newEdges)
@@ -114,6 +115,9 @@ export default {
       // relayout only after the elements are drawn
       this.$nextTick().then(() => this.$cy.layout(this.cytoscapeLayoutConfig).run())
     },
+    onIssueUpdate(updatedIssueData) {
+      console.log(updatedIssueData)
+    }
   },
 }
 </script>

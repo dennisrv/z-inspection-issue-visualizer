@@ -5,10 +5,15 @@ requirements for trustworthy AI.
 Built with Vue.js and cytoscape.js on node:16.4.2
 
 ## Project setup
-Project was configured with yarn 1.22.5.
+
+Frontend (web) was configured with yarn 1.22.5.
 ```
+cd web
 yarn install
 ```
+Project requires Neo4j as a database backend. 
+Initial content of the database can be created with the `bootstrap_db.cql` script.
+
 
 ### Compiles and hot-reloads for development
 ```
