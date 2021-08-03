@@ -25,8 +25,15 @@ The following environment variables are required:
 set so some non-empty value 
 
 ### Compiles and hot-reloads for development
+Start frontend
 ```
+cd web
 yarn serve
+```
+Start backend
+```
+cd django-api
+python manage.py runserver
 ```
 
 ### Compiles and minifies for production
