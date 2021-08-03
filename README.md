@@ -11,9 +11,18 @@ Frontend (web) was configured with yarn 1.22.5.
 cd web
 yarn install
 ```
-Project requires Neo4j as a database backend. 
+Backend is built with python (django and neomodel), uses neo4j as database backend. 
 Initial content of the database can be created with the `bootstrap_db.cql` script.
+Install python dependencies with:
+```
+cd django-api
+pip install -r requirements.txt
+```
 
+The following environment variables are required:
+- `DJANGO_SETTINGS_MODULE`: here `config.settings`
+- `DJANGO_SECRET_KEY`: required for session management (JWT signing),
+set so some non-empty value 
 
 ### Compiles and hot-reloads for development
 ```
