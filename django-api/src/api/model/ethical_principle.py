@@ -1,31 +1,29 @@
-from __future__ import annotations
+from typing import List, Optional
 
-from typing import Optional
 from neomodel import (
-    StructuredNode,
-    StringProperty,
-    IntegerProperty
+    RelationshipTo,
+    OneOrMore, StructuredNode
 )
-from pydantic import BaseModel
+
+from .base_node import (
+    BaseNode,
+    BaseNodeOrm
+)
+
+from .key_requirement import KeyRequirementOrm
 
 
-class EthicalPrincipleOrm(StructuredNode):
+class EthicalPrincipleOrm(BaseNodeOrm):
     # use __label__ if node label should not be the same as the class name
     # taken from https://stackoverflow.com/a/43458696
     __label__ = "EthicalPrinciple"
-    id = IntegerProperty()
-    name = StringProperty()
 
-class EthicalPrinciple(BaseModel):
-    id: int
-    name: str
+    related_requirements = RelationshipTo(KeyRequirementOrm, 'RELATED_TO', cardinality=OneOrMore)
 
-    class Config:
-        orm_mode = True
+    def pydantic_compatible(self):
+        self.related_requirements = self.related_requirements.all()
+        return self
 
-    @staticmethod
-    def get_first(**kwargs) -> Optional[EthicalPrinciple]:
-        data = EthicalPrincipleOrm.nodes.first_or_none(**kwargs)
-        if data is None:
-            return None
-        return EthicalPrinciple.from_orm(data)
+
+class EthicalPrinciple(BaseNode[EthicalPrincipleOrm]):
+    related_requirements: Optional[List[BaseNode]]

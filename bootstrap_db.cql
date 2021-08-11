@@ -1,49 +1,49 @@
 // delete everything
 MATCH (n)
-DETACH DELETE n
+DETACH DELETE n;
 
 // create Ethical principle nodes
 CREATE
-	(p1:EthicalPrinciple { name: 'Respect for human autonomy'}),
-	(p2:EthicalPrinciple { name: 'Prevention of harm'}),
-	(p3:EthicalPrinciple { name: 'Fairness'}),
-	(p4:EthicalPrinciple { name: 'Explicability'})
+	(p1:EthicalPrinciple { title: 'Respect for human autonomy'}),
+	(p2:EthicalPrinciple { title: 'Prevention of harm'}),
+	(p3:EthicalPrinciple { title: 'Fairness'}),
+	(p4:EthicalPrinciple { title: 'Explicability'})
 
 // create key requirement nodes
 CREATE
-	(k1:KeyRequirement { name: 'Human agency and oversight' }),
-	(k2:KeyRequirement { name: 'Technical robustness and safety' }),
-	(k3:KeyRequirement { name: 'Privacy and data governance' }),
-	(k4:KeyRequirement { name: 'Societal and Environmental well-being' }),
-	(k5:KeyRequirement { name: 'Diversity, non-discrimination and fairness' }),
-	(k6:KeyRequirement { name: 'Accountability' }),
-	(k7:KeyRequirement { name: 'Transparency' })
+	(k1:KeyRequirement { title: 'Human agency and oversight' }),
+	(k2:KeyRequirement { title: 'Technical robustness and safety' }),
+	(k3:KeyRequirement { title: 'Privacy and data governance' }),
+	(k4:KeyRequirement { title: 'Societal and Environmental well-being' }),
+	(k5:KeyRequirement { title: 'Diversity, non-discrimination and fairness' }),
+	(k6:KeyRequirement { title: 'Accountability' }),
+	(k7:KeyRequirement { title: 'Transparency' })
 
 // create sub-requirement nodes
 CREATE
-	(s1:SubRequirement { name: 'Fundamental rights' }),
-	(s2:SubRequirement { name: 'Human agency' }),
-	(s3:SubRequirement { name: 'Human oversight' }),
-	(s4:SubRequirement { name: 'Resilience to attack and security' }),
-	(s5:SubRequirement { name: 'Fallback plan and general safety' }),
-	(s6:SubRequirement { name: 'Accuracy' }),
-	(s7:SubRequirement { name: 'Reliability and Reproducibility' }),
-	(s8:SubRequirement { name: 'Privacy and data protection' }),
-	(s9:SubRequirement { name: 'Quality and integrity of data' }),
-	(s10:SubRequirement { name: 'Access to data' }),
-	(s11:SubRequirement { name: 'Sustainable and environmentally friendly AI' }),
-	(s12:SubRequirement { name: 'Social impact' }),
-	(s13:SubRequirement { name: 'Society and Democracy' }),
-	(s14:SubRequirement { name: 'Avoidance of unfair bias' }),
-	(s15:SubRequirement { name: 'Accessibility and universal design' }),
-	(s16:SubRequirement { name: 'Stakeholder Participation' }),
-	(s17:SubRequirement { name: 'Auditability' }),
-	(s18:SubRequirement { name: 'Minimisation and reporting of negative impacts' }),
-	(s19:SubRequirement { name: 'Trade-offs' }),
-	(s20:SubRequirement { name: 'Redress' }),
-	(s21:SubRequirement { name: 'Traceability' }),
-	(s22:SubRequirement { name: 'Explainability' }),
-	(s23:SubRequirement { name: 'Communication' })
+	(s1:SubRequirement { title: 'Fundamental rights' }),
+	(s2:SubRequirement { title: 'Human agency' }),
+	(s3:SubRequirement { title: 'Human oversight' }),
+	(s4:SubRequirement { title: 'Resilience to attack and security' }),
+	(s5:SubRequirement { title: 'Fallback plan and general safety' }),
+	(s6:SubRequirement { title: 'Accuracy' }),
+	(s7:SubRequirement { title: 'Reliability and Reproducibility' }),
+	(s8:SubRequirement { title: 'Privacy and data protection' }),
+	(s9:SubRequirement { title: 'Quality and integrity of data' }),
+	(s10:SubRequirement { title: 'Access to data' }),
+	(s11:SubRequirement { title: 'Sustainable and environmentally friendly AI' }),
+	(s12:SubRequirement { title: 'Social impact' }),
+	(s13:SubRequirement { title: 'Society and Democracy' }),
+	(s14:SubRequirement { title: 'Avoidance of unfair bias' }),
+	(s15:SubRequirement { title: 'Accessibility and universal design' }),
+	(s16:SubRequirement { title: 'Stakeholder Participation' }),
+	(s17:SubRequirement { title: 'Auditability' }),
+	(s18:SubRequirement { title: 'Minimisation and reporting of negative impacts' }),
+	(s19:SubRequirement { title: 'Trade-offs' }),
+	(s20:SubRequirement { title: 'Redress' }),
+	(s21:SubRequirement { title: 'Traceability' }),
+	(s22:SubRequirement { title: 'Explainability' }),
+	(s23:SubRequirement { title: 'Communication' })
 
 // create relation between principles and key requirements
 CREATE
@@ -80,4 +80,4 @@ CREATE
 	(k6)-[:RELATED_TO]->(s20),
 	(k7)-[:RELATED_TO]->(s21),
 	(k7)-[:RELATED_TO]->(s22),
-	(k7)-[:RELATED_TO]->(s23)
+	(k7)-[:RELATED_TO]->(s23);
