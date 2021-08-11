@@ -54,3 +54,8 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 If yarn is called from WSL, the code directory must not be on Windows, as 
 WSL can't watch non-WSL files for changes. Moving to a WSL directory solves
 this. See https://github.com/microsoft/WSL/issues/6255#issuecomment-730701001
+2. IntelliJ / PyCharm hangs on indexing task when using WSL    
+This was frequently observed during development, cause is often that the PyCharm process 
+can not connect to WSL. Verify with running \<PyCharmInstallDir\>\pycharm.bat in 
+PowerShell, if errors like `java.net.ConnectException: Connection refused: no further information`
+appear, stop PyCharm process, type `wsl --shutdown` in PowerShell and restart PyCharm
