@@ -20,7 +20,7 @@ const cytoscapeStyle = [
         }
     },
     {
-        selector: ".principle",
+        selector: ".ethical-principle",
         style: {
             "height": "80%",
             "width": "210%",
@@ -31,7 +31,7 @@ const cytoscapeStyle = [
         }
     },
     {
-        selector: ".requirement",
+        selector: ".key-requirement",
         style: {
             "height": "60%",
             "width": "160%",

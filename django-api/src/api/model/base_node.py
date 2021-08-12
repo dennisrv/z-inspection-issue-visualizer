@@ -84,9 +84,11 @@ class BaseNode(BaseModel, Generic[OrmClass]):
             return []
         else:
             return [{
-                'id': f'{self.id}-{target_node_id}',
-                'source': f'{self.id}',
-                'target': f'{target_node_id}'
+                'data': {
+                    'id': f'{self.id}-{target_node_id}',
+                    'source': f'{self.id}',
+                    'target': f'{target_node_id}'
+                }
             } for target_node_id in self.related_to]
 
     def cytoscape_class(self):

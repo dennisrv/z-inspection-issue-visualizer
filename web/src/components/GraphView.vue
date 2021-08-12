@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="8" class="grey lighten-5">
         <!--    cytoscape core instance is now available at this.$refs['cytoscape-component']    -->
-        <cytoscape ref="cytoscape-component" :config="this.cytoscapeConfig" :preConfig="preConfig"
+        <cytoscape v-if="this.elements.length" ref="cytoscape-component" :config="this.cytoscapeConfig" :preConfig="preConfig"
                    :afterCreated="afterGraphCreated">
           <cy-element
               v-for="def in this.elements"
@@ -45,7 +45,7 @@
 // change eslint rule according to  https://github.com/vuejs/eslint-plugin-vue/issues/1004#issuecomment-568978285
 // so it does not fail the dev build for this "unused" variable
 import dagre from "cytoscape-dagre"
-import {initialNodes, initialEdges} from '@/constants/initialGraphData'
+import http from "@/plugins/http"
 import cytoscapeStyle from "@/constants/cytoscapeStyle";
 
 import {toId, createNode, createEdge} from "@/util/graphUtils";
@@ -63,21 +63,15 @@ export default {
     $cy: {},
     cytoscapeLayoutConfig: {
       name: 'dagre',
-      rankDir: 'LR'
+      rankDir: 'RL'
     },
     cytoscapeConfig: {
       autoRefreshLayout: true,
       style: cytoscapeStyle
     },
-    nodes: initialNodes,
-    edges: initialEdges,
+    elements: [],
     selectedIssueDetails: createEmptyIssueDetails()
   }),
-  computed: {
-    elements: function () {
-      return this.nodes.concat(this.edges)
-    }
-  },
   methods: {
     // inspired by https://github.com/rcarcasses/vue-cytoscape-cola/blob/master/src/App.vue
     preConfig(cytoscape) {
@@ -118,6 +112,17 @@ export default {
     onIssueUpdate(updatedIssueData) {
       console.log(updatedIssueData)
     }
+  },
+  created() {
+    http
+        .get('/nodes')
+        .then((response) => {
+          let responseData = response.data
+
+          if(responseData.status === "success") {
+            this.elements = responseData.data.nodes.concat(responseData.data.edges)
+          }
+        })
   },
 }
 </script>

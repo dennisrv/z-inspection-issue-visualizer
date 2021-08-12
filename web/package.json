@@ -8,6 +8,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "axios": "^0.21.1",
     "core-js": "^3.6.5",
     "cytoscape": "^3.19.0",
     "cytoscape-dagre": "^2.3.2",
