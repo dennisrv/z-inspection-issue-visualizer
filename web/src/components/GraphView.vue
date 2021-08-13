@@ -48,8 +48,6 @@ import dagre from "cytoscape-dagre"
 import http from "@/plugins/http"
 import cytoscapeStyle from "@/constants/cytoscapeStyle";
 
-import {toId, createNode, createEdge} from "@/util/graphUtils";
-
 import NewIssueDialogButton from '@/components/NewIssueDialog'
 import IssueDetailsCard, {createEmptyIssueDetails} from '@/components/IssueDetailsCard'
 
@@ -97,28 +95,30 @@ export default {
     },
     onNewIssue(newIssueData) {
 
-      let id = toId(newIssueData.issueTitle + Math.floor(Math.random() * 1000))
-      let newNode = createNode(newIssueData.issueTitle, newIssueData.issueType + " issue-node", id)
-      newNode['data']['issueDetails'] = newIssueData
-
-      let newEdges = Object.values(newIssueData.related).map((rel) => createEdge(rel.subRequirement, id))
-
-      this.nodes.push(newNode)
-      this.edges.push(...newEdges)
-
-      // relayout only after the elements are drawn
-      this.$nextTick().then(() => this.$cy.layout(this.cytoscapeLayoutConfig).run())
+      http.createNewIssue(newIssueData)
+          .then((response) => {
+            console.log(response.data)
+          })
+      // let id = toId(newIssueData.issueTitle + Math.floor(Math.random() * 1000))
+      // let newNode = createNode(newIssueData.issueTitle, newIssueData.issueType + " issue-node", id)
+      // newNode['data']['issueDetails'] = newIssueData
+      //
+      // let newEdges = Object.values(newIssueData.related).map((rel) => createEdge(rel.subRequirement, id))
+      //
+      // this.nodes.push(newNode)
+      // this.edges.push(...newEdges)
+      //
+      // // relayout only after the elements are drawn
+      // this.$nextTick().then(() => this.$cy.layout(this.cytoscapeLayoutConfig).run())
     },
     onIssueUpdate(updatedIssueData) {
       console.log(updatedIssueData)
     }
   },
   created() {
-    http
-        .get('/nodes')
+    http.getAll()
         .then((response) => {
           let responseData = response.data
-
           if(responseData.status === "success") {
             this.elements = responseData.data.nodes.concat(responseData.data.edges)
           }

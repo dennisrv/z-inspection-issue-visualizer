@@ -4,14 +4,17 @@ from typing import (
     TypeVar,
     Generic,
     Optional,
-    get_args, List, Tuple, Dict
+    get_args,
+    List,
+    Tuple,
+    Dict
 )
 
 from neomodel import (
-    IntegerProperty,
     RelationshipManager,
     StringProperty,
     StructuredNode,
+    UniqueIdProperty,
 )
 from pydantic import BaseModel
 
@@ -47,7 +50,7 @@ class NodeList(object):
 
 class BaseNodeOrm(StructuredNode):
     __abstract_node__ = True
-    id = IntegerProperty()
+    id = UniqueIdProperty()
     title = StringProperty()
 
 
@@ -57,6 +60,7 @@ OrmClass = TypeVar('OrmClass', bound=BaseNodeOrm)
 def get_generic_class(cls):
     return get_args(cls.__orig_bases__[0])[0]
 
+
 class BaseNode(BaseModel, Generic[OrmClass]):
     id: int
     title: str
@@ -65,7 +69,6 @@ class BaseNode(BaseModel, Generic[OrmClass]):
 
     class Config:
         orm_mode = True
-
 
     def to_cytoscape(self) -> Tuple[Dict[str, object], List[Dict[str, object]]]:
         return self.get_node_repr(), self.get_edges_repr()
