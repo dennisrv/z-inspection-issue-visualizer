@@ -59,3 +59,6 @@ This was frequently observed during development, cause is often that the PyCharm
 can not connect to WSL. Verify with running \<PyCharmInstallDir\>\pycharm.bat in 
 PowerShell, if errors like `java.net.ConnectException: Connection refused: no further information`
 appear, stop PyCharm process, type `wsl --shutdown` in PowerShell and restart PyCharm
+3. When running django_api / tests make sure to use the correct settings.
+The settings file can be set via `--settings` option of the `manage.py` script or via
+the environment variable `DJANGO_SETTINGS_MODULE`.

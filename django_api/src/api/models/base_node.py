@@ -15,6 +15,7 @@ from neomodel import (
     StringProperty,
     StructuredNode,
     UniqueIdProperty,
+    db,
 )
 from pydantic import BaseModel
 
@@ -53,6 +54,16 @@ class BaseNodeOrm(StructuredNode):
     id = UniqueIdProperty()
     title = StringProperty()
 
+    @classmethod
+    def create_id_map(cls):
+        res, _ = db.cypher_query(f'match (n:{cls.__label__}) return id(n), n.title')
+        return dict(res)
+
+    @classmethod
+    def create_title_map(cls):
+        res, _ = db.cypher_query(f'match (n:{cls.__label__}) return n.title, id(n)')
+        return dict(res)
+
 
 OrmClass = TypeVar('OrmClass', bound=BaseNodeOrm)
 
@@ -62,7 +73,7 @@ def get_generic_class(cls):
 
 
 class BaseNode(BaseModel, Generic[OrmClass]):
-    id: int
+    id: Optional[int]
     title: str
 
     related_to: Optional[NodeList]
@@ -70,10 +81,10 @@ class BaseNode(BaseModel, Generic[OrmClass]):
     class Config:
         orm_mode = True
 
-    def to_cytoscape(self) -> Tuple[Dict[str, object], List[Dict[str, object]]]:
+    def to_cytoscape(self) -> Tuple[Dict[str, Dict], List[Dict[str, Dict]]]:
         return self.get_node_repr(), self.get_edges_repr()
 
-    def get_node_repr(self) -> Dict[str, object]:
+    def get_node_repr(self) -> Dict[str, Dict]:
         return {
             'data': {
                 'id': f'{self.id}',
@@ -82,7 +93,7 @@ class BaseNode(BaseModel, Generic[OrmClass]):
             'classes': self.cytoscape_class()
         }
 
-    def get_edges_repr(self) -> List[Dict[str, object]]:
+    def get_edges_repr(self) -> List[Dict[str, Dict]]:
         if self.related_to is None:
             return []
         else:

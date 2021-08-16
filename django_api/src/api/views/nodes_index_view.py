@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from ..models import (
     EthicalPrinciple,
     KeyRequirement,
-    SubRequirement,
+    SubRequirement, Issue,
 )
 
 class NodesIndexView(View):
@@ -31,4 +31,15 @@ class NodesIndexView(View):
 
     def post(self, request: HttpRequest):
 
-        return JsonResponse(request.POST)
+        try:
+            new_issue = Issue.parse_raw(request.body)
+            return JsonResponse(new_issue.dict())
+        except KeyError as k:
+            error_response = JsonResponse({
+                'status': 'fail',
+                'data': {
+                    k.args[0]: f'{k.args[0]} is required'
+                }
+            })
+            error_response.status_code = 400
+            return error_response

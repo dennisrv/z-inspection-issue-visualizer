@@ -84,10 +84,11 @@ export default {
       await cy.instance
       this.$cy = cy
       this.$cy.layout(this.cytoscapeLayoutConfig).run()
-      this.$cy.on('select', '.issue-node', event => {
+      this.$cy.on('select', '.issue', event => {
         this.selectedIssueDetails = event.target._private.data.issueDetails
+        console.log(this.$cy.$(':selected'))
       })
-      this.$cy.on('unselect', '.issue-node', () => {
+      this.$cy.on('unselect', '.issue', () => {
         if (this.$cy.$(':selected').length === 0) {
           this.selectedIssueDetails = createEmptyIssueDetails()
         }
@@ -98,6 +99,17 @@ export default {
       http.createNewIssue(newIssueData)
           .then((response) => {
             console.log(response.data)
+            let responseData = response.data
+            if (responseData.status === "success") {
+              this.elements = this.elements.concat(responseData.data.node).concat(responseData.data.edges)
+            }
+
+            let newNodeId = responseData.data.node.data.id
+            // mark new element as selected
+            this.$cy.nodes(`[id = ${newNodeId}]`).select()
+
+            // relayout only after the elements are drawn
+            this.$nextTick().then(() => this.$cy.layout(this.cytoscapeLayoutConfig).run())
           })
       // let id = toId(newIssueData.issueTitle + Math.floor(Math.random() * 1000))
       // let newNode = createNode(newIssueData.issueTitle, newIssueData.issueType + " issue-node", id)

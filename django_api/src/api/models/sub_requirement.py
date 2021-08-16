@@ -7,8 +7,8 @@ from .base_node import (
     BaseNode,
     BaseNodeOrm,
 )
+from .key_requirement import KeyRequirementOrm
 
-from .key_requirement import  KeyRequirementOrm
 
 class SubRequirementOrm(BaseNodeOrm):
     # use __label__ if node label should not be the same as the class name
@@ -22,3 +22,7 @@ class SubRequirement(BaseNode[SubRequirementOrm]):
 
     def cytoscape_class(self):
         return "sub-requirement"
+
+
+# SUB_REQUIREMENT_ID_TITLE_MAP = SubRequirementOrm.create_id_map()
+# SUB_REQUIREMENT_TITLE_ID_MAP = SubRequirementOrm.create_title_map()

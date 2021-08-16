@@ -1,4 +1,5 @@
 from django.apps import AppConfig
+from django.conf import settings
 from neomodel import (
     config,
     install_all_labels
@@ -10,5 +11,5 @@ class ApiConfig(AppConfig):
     verbose_name = "Neo4j REST API"
 
     def ready(self):
-        config.DATABASE_URL = "bolt://neo4j:test@localhost:7687"
-        install_all_labels()
+        config.DATABASE_URL = getattr(settings, "NEO4J_BOLT_URL")
+        # install_all_labels()
