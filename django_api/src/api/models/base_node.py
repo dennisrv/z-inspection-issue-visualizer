@@ -14,8 +14,6 @@ from neomodel import (
     RelationshipManager,
     StringProperty,
     StructuredNode,
-    UniqueIdProperty,
-    db,
 )
 from pydantic import BaseModel
 
@@ -51,18 +49,7 @@ class NodeList(object):
 
 class BaseNodeOrm(StructuredNode):
     __abstract_node__ = True
-    id = UniqueIdProperty()
     title = StringProperty()
-
-    @classmethod
-    def create_id_map(cls):
-        res, _ = db.cypher_query(f'match (n:{cls.__label__}) return id(n), n.title')
-        return dict(res)
-
-    @classmethod
-    def create_title_map(cls):
-        res, _ = db.cypher_query(f'match (n:{cls.__label__}) return n.title, id(n)')
-        return dict(res)
 
 
 OrmClass = TypeVar('OrmClass', bound=BaseNodeOrm)
@@ -105,7 +92,7 @@ class BaseNode(BaseModel, Generic[OrmClass]):
                 }
             } for target_node_id in self.related_to]
 
-    def cytoscape_class(self):
+    def cytoscape_class(self) -> str:
         pass
 
     @classmethod
@@ -122,3 +109,7 @@ class BaseNode(BaseModel, Generic[OrmClass]):
         if data is None:
             return None
         return [cls.from_orm(d) for d in data]
+
+    @classmethod
+    def get_by_title(cls, *titles: str) -> List[OrmClass]:
+        return get_generic_class(cls).nodes.filter(title__in=titles)

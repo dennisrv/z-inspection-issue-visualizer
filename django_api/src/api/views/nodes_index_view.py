@@ -3,18 +3,20 @@ from django.http import (
     JsonResponse,
 )
 from django.views import View
-from django.views.decorators.csrf import csrf_exempt
+from pydantic import ValidationError
 
 from ..models import (
     EthicalPrinciple,
     KeyRequirement,
-    SubRequirement, Issue,
+    SubRequirement,
+    Issue,
 )
+
 
 class NodesIndexView(View):
 
     def get(self, request: HttpRequest):
-        data = EthicalPrinciple.get_all() + KeyRequirement.get_all() + SubRequirement.get_all()
+        data = EthicalPrinciple.get_all() + KeyRequirement.get_all() + SubRequirement.get_all() + Issue.get_all()
         nodes, edges = [], []
         for d in data:
             _node, _edges = d.to_cytoscape()
@@ -33,13 +35,19 @@ class NodesIndexView(View):
 
         try:
             new_issue = Issue.parse_raw(request.body)
-            return JsonResponse(new_issue.dict())
-        except KeyError as k:
+            new_issue.save()
+
+            return JsonResponse({
+                "status": "success",
+                "data": {
+                    "node": new_issue.get_node_repr(),
+                    "edges": new_issue.get_edges_repr()
+                }
+            })
+        except ValidationError as v:
             error_response = JsonResponse({
                 'status': 'fail',
-                'data': {
-                    k.args[0]: f'{k.args[0]} is required'
-                }
+                'data': [{e['loc'][0]: e['msg']} for e in v.errors()]
             })
             error_response.status_code = 400
             return error_response
