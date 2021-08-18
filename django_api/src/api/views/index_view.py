@@ -3,8 +3,8 @@ from django.http import (
     JsonResponse,
 )
 from django.views import View
-from pydantic import ValidationError
 
+from .utils import pydantic_validated
 from ..models import (
     EthicalPrinciple,
     KeyRequirement,
@@ -13,7 +13,7 @@ from ..models import (
 )
 
 
-class NodesIndexView(View):
+class IndexView(View):
 
     def get(self, request: HttpRequest):
         data = EthicalPrinciple.get_all() + KeyRequirement.get_all() + SubRequirement.get_all() + Issue.get_all()
@@ -31,23 +31,15 @@ class NodesIndexView(View):
             }
         })
 
+    @pydantic_validated
     def post(self, request: HttpRequest):
+        new_issue = Issue.parse_raw(request.body)
+        new_issue.save_new()
 
-        try:
-            new_issue = Issue.parse_raw(request.body)
-            new_issue.save()
-
-            return JsonResponse({
-                "status": "success",
-                "data": {
-                    "node": new_issue.get_node_repr(),
-                    "edges": new_issue.get_edges_repr()
-                }
-            })
-        except ValidationError as v:
-            error_response = JsonResponse({
-                'status': 'fail',
-                'data': [{e['loc'][0]: e['msg']} for e in v.errors()]
-            })
-            error_response.status_code = 400
-            return error_response
+        return JsonResponse({
+            "status": "success",
+            "data": {
+                "node": new_issue.get_node_repr(),
+                "edges": new_issue.get_edges_repr()
+            }
+        })

@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import (
     List,
-    Dict,
+    Dict, Union, Set,
 )
 
 from neomodel import (
@@ -19,7 +19,7 @@ from .base_node import (
     BaseNode,
     BaseNodeOrm,
 )
-from .sub_requirement import SubRequirementOrm, SubRequirement
+from .sub_requirement import SubRequirementOrm
 
 
 class IssueOrm(BaseNodeOrm):
@@ -43,12 +43,46 @@ class IssueTypeEnum(str, Enum):
     flag = "flag"
 
 
+class RelatedWrapper(list):
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def __modify_schema__(cls, field_schema):
+        # __modify_schema__ should mutate the dict it receives in place,
+        # the returned value will be ignored
+        field_schema.update(
+            description='Wrapper because neo4j does not allow nested lists and the position '
+                        'of elements has meaning: 1st: principle, 2nd: requirement, 3rd: subRequirement '
+                        'and this allows us to parse that list into dicts with the correct naming',
+            # some example postcodes
+            examples=['1234', '100028'],
+        )
+
+    @classmethod
+    def validate(cls, instance: Union[List[str], List[Dict[str, str]]]) -> List[Dict[str, str]]:
+        # somewhat hacky solution to handle neo4j data where all related are stored in one long
+        # list and frontend data, where related can be nicely stored in dicts
+        if len(instance) > 0:
+            if isinstance(instance[0], dict):
+                return instance
+            elif len(instance) % 3 != 0:
+                raise TypeError('Number of related elements must be a multiple of 3')
+        return [{
+            "principle": instance[i],
+            "requirement": instance[i+1],
+            "subRequirement": instance[i+2]
+        } for i in range(0, len(instance), 3)]
+
+
+
 class Issue(BaseNode[IssueOrm]):
     areas: List[str]
     # define field aliases for easier conversion between js field names and python field names
     description: str = Field(alias="issueDescription")
     issue_type: IssueTypeEnum = Field(alias="issueType")
-    related: List[Dict[str, str]]
+    related: RelatedWrapper
     title: str = Field(alias="issueTitle")
 
     class Config:
@@ -70,9 +104,16 @@ class Issue(BaseNode[IssueOrm]):
     def cytoscape_class(self) -> str:
         return "issue"
 
-    def save(self) -> Issue:
-        # omit values set via db later
-        issue_dict = self.dict(exclude={'related_to', 'id'})
+    def save_new(self):
+        # don't use current issue id (will be set by db)
+        return self._save(params_to_exclude={'id', 'related_to'})
+
+    def save_update(self):
+        # issue exists in db => issue has id => id can be used
+        return self._save(params_to_exclude={'related_to'})
+
+    def _save(self, params_to_exclude: Set[str]) -> Issue:
+        issue_dict = self.dict(exclude=params_to_exclude)
         issue_dict['related'] = flatten([rel.values() for rel in self.related])
         issue_dict['issue_type'] = issue_dict['issue_type'].value
         orm_issue = IssueOrm(**issue_dict).save()
@@ -80,9 +121,11 @@ class Issue(BaseNode[IssueOrm]):
         self.id = orm_issue.id
         self.related_to = []
 
-        related_sub_requirements = [rel['subRequirement'] for rel in self.related]
-        for rel_req in SubRequirement.get_by_title(*related_sub_requirements):
-            orm_issue.related_to.connect(rel_req)
-            self.related_to.append(rel_req.id)
+        orm_issue.related_to.disconnect_all()
+        if len(self.related) > 0:
+            related_sub_requirements = [rel['subRequirement'] for rel in self.related]
+            for rel_req in SubRequirementOrm.get_by_title(*related_sub_requirements):
+                orm_issue.related_to.connect(rel_req)
+                self.related_to.append(rel_req.id)
 
         return self

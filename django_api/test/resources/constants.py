@@ -1,1 +1,0 @@
-NEO4J_BOLT_URL = "bolt://neo4j:testpassword@localhost:7688"

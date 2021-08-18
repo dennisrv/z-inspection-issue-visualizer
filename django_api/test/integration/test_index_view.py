@@ -1,35 +1,13 @@
 import json
-import os.path as path
-from pathlib import Path
 
 from django.test import (
-    SimpleTestCase,
     Client,
 )
-from neomodel import (
-    clear_neo4j_database,
-    db,
-    install_all_labels,
-)
+
+from integration.neo4j_test_case import Neo4jTestCase
 
 
-class NodeIndexTest(SimpleTestCase):
-
-    @classmethod
-    def setUpClass(cls) -> None:
-        resource_path = f'{path.dirname(__file__)}/../resources/bootstrap_db.cql'
-        query_text = Path(resource_path).read_text()
-        clear_neo4j_database(db)
-        install_all_labels()
-        db.cypher_query(query_text)
-
-    @classmethod
-    def tearDownClass(cls):
-        clear_neo4j_database(db, clear_constraints=True, clear_indexes=True)
-
-    def tearDown(self) -> None:
-        # delete all issues created during the test
-        db.cypher_query("match (n:Issue) detach delete n")
+class NodeIndexTest(Neo4jTestCase):
 
     def test_get_index_should_return_200_and_data(self):
         client = Client()

@@ -13,9 +13,9 @@ from typing import (
 from neomodel import (
     RelationshipManager,
     StringProperty,
-    StructuredNode,
+    StructuredNode, UniqueIdProperty,
 )
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class NodeList(object):
@@ -49,7 +49,23 @@ class NodeList(object):
 
 class BaseNodeOrm(StructuredNode):
     __abstract_node__ = True
-    title = StringProperty()
+    title = StringProperty(index=True)
+
+    @classmethod
+    def get_all(cls) -> List[BaseNodeOrm]:
+        return cls.nodes.all()
+
+    @classmethod
+    def get_by_title(cls, *titles: str) -> List[BaseNodeOrm]:
+        return cls.nodes.filter(title__in=titles)
+
+    @classmethod
+    def get_by_id(cls, id_to_search: int) -> BaseNodeOrm:
+        # hack to get the node by id, not sure if this should be changed later
+        # as this is apparently not how it is supposed to be used
+        node = cls(id=id_to_search)
+        node.refresh()
+        return node
 
 
 OrmClass = TypeVar('OrmClass', bound=BaseNodeOrm)
@@ -60,6 +76,7 @@ def get_generic_class(cls):
 
 
 class BaseNode(BaseModel, Generic[OrmClass]):
+    # neo4j internal id, will not be used much
     id: Optional[int]
     title: str
 
@@ -104,12 +121,13 @@ class BaseNode(BaseModel, Generic[OrmClass]):
         return cls.from_orm(data)
 
     @classmethod
-    def get_all(cls) -> Optional[List[BaseNode]]:
-        data = get_generic_class(cls).nodes.all()
-        if data is None:
-            return None
-        return [cls.from_orm(d) for d in data]
+    def get_all(cls) -> List[BaseNode]:
+        return [cls.from_orm(n) for n in get_generic_class(cls).get_all()]
 
     @classmethod
-    def get_by_title(cls, *titles: str) -> List[OrmClass]:
-        return get_generic_class(cls).nodes.filter(title__in=titles)
+    def get_by_title(cls, *titles: str) -> List[BaseNode]:
+        return [cls.from_orm(n) for n in get_generic_class(cls).get_by_title(*titles)]
+
+    @classmethod
+    def get_by_id(cls, id_to_search: int) -> BaseNode:
+        return cls.from_orm(get_generic_class(cls).get_by_id(id_to_search))
