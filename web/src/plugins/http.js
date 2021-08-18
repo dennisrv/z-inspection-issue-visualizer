@@ -2,13 +2,23 @@ import axios from 'axios'
 
 const no_auth = axios.create({
     baseURL: 'http://localhost:8000/api',
+    headers: {
+        post: {
+            "Content-Type": "application/json"
+        }
+    }
 });
 
 const with_auth = axios.create({
     baseURL: 'http://localhost:8000/api',
     xsrfCookieName: 'csrftoken',
     xsrfHeaderName: 'X-CSRFToken',
-    withCredentials: true
+    withCredentials: true,
+    headers: {
+        post: {
+            "Content-Type": "application/json"
+        }
+    },
 })
 
 no_auth.get('/auth')

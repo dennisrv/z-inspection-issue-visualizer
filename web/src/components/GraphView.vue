@@ -105,23 +105,17 @@ export default {
             }
 
             let newNodeId = responseData.data.node.data.id
-            // mark new element as selected
-            this.$cy.nodes(`[id = ${newNodeId}]`).select()
 
             // relayout only after the elements are drawn
-            this.$nextTick().then(() => this.$cy.layout(this.cytoscapeLayoutConfig).run())
+            this.$nextTick().then(() => {
+              this.$cy.layout(this.cytoscapeLayoutConfig).run()
+
+              this.$cy.nodes().unselect()
+              // mark new element as selected
+              // use @= to do string / int comparisons
+              this.$cy.nodes(`[id @= '${newNodeId}']`).select()
+            })
           })
-      // let id = toId(newIssueData.issueTitle + Math.floor(Math.random() * 1000))
-      // let newNode = createNode(newIssueData.issueTitle, newIssueData.issueType + " issue-node", id)
-      // newNode['data']['issueDetails'] = newIssueData
-      //
-      // let newEdges = Object.values(newIssueData.related).map((rel) => createEdge(rel.subRequirement, id))
-      //
-      // this.nodes.push(newNode)
-      // this.edges.push(...newEdges)
-      //
-      // // relayout only after the elements are drawn
-      // this.$nextTick().then(() => this.$cy.layout(this.cytoscapeLayoutConfig).run())
     },
     onIssueUpdate(updatedIssueData) {
       console.log(updatedIssueData)

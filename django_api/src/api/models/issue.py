@@ -14,7 +14,7 @@ from neomodel import (
 )
 from pydantic import Field
 
-from utils import flatten
+from src.utils import flatten
 from .base_node import (
     BaseNode,
     BaseNodeOrm,
