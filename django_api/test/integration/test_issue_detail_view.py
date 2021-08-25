@@ -36,7 +36,4 @@ class IssueViewTest(Neo4jTestCase):
         resp = client.post(f'/api/nodes/{self.new_issue.id}', data=json.dumps(issue_data), content_type="application/json")
         self.assertEquals(resp.status_code, 200)
 
-        resp_issue_details = resp.json()['data']['data']['issueDetails']
-        self.assertEquals(resp_issue_details['issueDescription'], new_description)
-
         self.assertEquals(Issue.get_by_id(self.new_issue.id).description, new_description)

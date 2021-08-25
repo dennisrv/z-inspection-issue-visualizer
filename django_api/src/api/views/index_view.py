@@ -4,11 +4,11 @@ from django.http import (
 )
 from django.views import View
 
-from .utils import pydantic_validated
+from .utils import (
+    pydantic_validated,
+    get_all_as_cytoscape,
+)
 from ..models import (
-    EthicalPrinciple,
-    KeyRequirement,
-    SubRequirement,
     Issue,
 )
 
@@ -16,12 +16,7 @@ from ..models import (
 class IndexView(View):
 
     def get(self, request: HttpRequest):
-        data = EthicalPrinciple.get_all() + KeyRequirement.get_all() + SubRequirement.get_all() + Issue.get_all()
-        nodes, edges = [], []
-        for d in data:
-            _node, _edges = d.to_cytoscape()
-            nodes.append(_node)
-            edges.extend(_edges)
+        nodes, edges = get_all_as_cytoscape()
 
         return JsonResponse({
             "status": "success",

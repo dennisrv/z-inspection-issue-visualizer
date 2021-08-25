@@ -1,7 +1,10 @@
 from django.http import JsonResponse
 from django.views import View
 
-from .utils import pydantic_validated
+from .utils import (
+    pydantic_validated,
+    get_all_as_cytoscape,
+)
 from ..models import Issue
 
 
@@ -20,7 +23,11 @@ class IssueDetailView(View):
         issue.id = node_id
         issue.save_update()
 
+        nodes, edges = get_all_as_cytoscape()
         return JsonResponse({
             "status": "success",
-            "data": issue.get_node_repr()
+            "data": {
+                "nodes": nodes,
+                "edges": edges
+            }
         })

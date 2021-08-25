@@ -7,7 +7,7 @@ from django.test import (
 from integration.neo4j_test_case import Neo4jTestCase
 
 
-class NodeIndexTest(Neo4jTestCase):
+class IndexViewTest(Neo4jTestCase):
 
     def test_get_index_should_return_200_and_data(self):
         client = Client()

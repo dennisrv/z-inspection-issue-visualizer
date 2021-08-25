@@ -31,7 +31,12 @@ function createNewIssue(postData) {
     return with_auth.post('/nodes/', postData)
 }
 
+function updateIssue(issueId, postData) {
+    return with_auth.post(`/nodes/${issueId}`, postData)
+}
+
 export default {
     getAll,
-    createNewIssue
+    createNewIssue,
+    updateIssue,
 };

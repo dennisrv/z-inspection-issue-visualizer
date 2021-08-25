@@ -86,7 +86,6 @@ export default {
       this.$cy.layout(this.cytoscapeLayoutConfig).run()
       this.$cy.on('select', '.issue', event => {
         this.selectedIssueDetails = event.target._private.data.issueDetails
-        console.log(this.$cy.$(':selected'))
       })
       this.$cy.on('unselect', '.issue', () => {
         if (this.$cy.$(':selected').length === 0) {
@@ -98,7 +97,7 @@ export default {
 
       http.createNewIssue(newIssueData)
           .then((response) => {
-            console.log(response.data)
+
             let responseData = response.data
             if (responseData.status === "success") {
               this.elements = this.elements.concat(responseData.data.node).concat(responseData.data.edges)
@@ -118,7 +117,18 @@ export default {
           })
     },
     onIssueUpdate(updatedIssueData) {
-      console.log(updatedIssueData)
+      // hack so issue details do not change back to previous value on button press only for the
+      // change to change again to the updated value once the response is processed
+      this.selectedIssueDetails = updatedIssueData
+      let issueId = updatedIssueData.id
+      http.updateIssue(issueId, updatedIssueData)
+          .then((response) => {
+            let responseData = response.data.data
+            this.elements = responseData.nodes.concat(responseData.edges)
+            this.$nextTick().then(() => {
+              this.$cy.layout(this.cytoscapeLayoutConfig).run()
+            })
+          })
     }
   },
   created() {

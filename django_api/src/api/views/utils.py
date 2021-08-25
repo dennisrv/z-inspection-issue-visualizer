@@ -3,6 +3,13 @@ import functools
 from django.http import JsonResponse
 from pydantic import ValidationError
 
+from ..models import (
+    EthicalPrinciple,
+    KeyRequirement,
+    SubRequirement,
+    Issue,
+)
+
 
 class ValidationErrorResponse(JsonResponse):
     def __init__(self, validation_error: ValidationError):
@@ -25,3 +32,14 @@ def pydantic_validated(f):
             return ValidationErrorResponse(v)
 
     return inner
+
+
+def get_all_as_cytoscape():
+    data = EthicalPrinciple.get_all() + KeyRequirement.get_all() + SubRequirement.get_all() + Issue.get_all()
+    nodes, edges = [], []
+    for d in data:
+        _node, _edges = d.to_cytoscape()
+        nodes.append(_node)
+        edges.extend(_edges)
+
+    return nodes, edges
