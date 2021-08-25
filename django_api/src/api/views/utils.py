@@ -34,7 +34,7 @@ def pydantic_validated(f):
     return inner
 
 
-def get_all_as_cytoscape():
+def get_all_nodes_and_edges():
     data = EthicalPrinciple.get_all() + KeyRequirement.get_all() + SubRequirement.get_all() + Issue.get_all()
     nodes, edges = [], []
     for d in data:
@@ -43,3 +43,14 @@ def get_all_as_cytoscape():
         edges.extend(_edges)
 
     return nodes, edges
+
+
+def json_response_with_all_nodes_and_edges():
+    nodes, edges = get_all_nodes_and_edges()
+    return JsonResponse({
+        "status": "success",
+        "data": {
+            "nodes": nodes,
+            "edges": edges,
+        }
+    })

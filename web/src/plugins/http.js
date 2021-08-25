@@ -35,8 +35,13 @@ function updateIssue(issueId, postData) {
     return with_auth.post(`/nodes/${issueId}`, postData)
 }
 
+function deleteIssue(issueId) {
+    return with_auth.delete(`/nodes/${issueId}`)
+}
+
 export default {
     getAll,
     createNewIssue,
     updateIssue,
+    deleteIssue,
 };

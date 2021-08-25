@@ -109,14 +109,6 @@
       </v-form>
     </v-card-text>
     <v-card-actions>
-      <v-spacer></v-spacer>
-      <v-btn
-          color="blue darken-1"
-          text
-          @click="resetIssue()"
-      >
-        {{ resetButtonText }}
-      </v-btn>
       <v-btn
           color="blue darken-1"
           type="submit"
@@ -124,6 +116,22 @@
           @click="submitIssue()"
       >
         {{ submitButtonText }}
+      </v-btn>
+      <v-btn
+          color="blue darken-1"
+          text
+          @click="resetIssue()"
+      >
+        {{ resetButtonText }}
+      </v-btn>
+      <v-spacer></v-spacer>
+      <v-btn
+          v-if="this.deleteButtonText !== null"
+          color="error"
+          float-left
+          @click="deleteIssue()"
+      >
+        {{ deleteButtonText }}
       </v-btn>
     </v-card-actions>
   </v-card>
@@ -159,10 +167,15 @@ export default {
     title: String,
     resetButtonText: String,
     submitButtonText: String,
+    deleteButtonText: {
+      type: String,
+      default: null,
+    },
     initialFormValues: {
       // if no form values are given, we use null for everything
       default: createEmptyIssueDetails
-    }
+    },
+
   },
   data: () => ({
     valid: false,
@@ -196,13 +209,16 @@ export default {
   }),
   methods: {
     submitIssue() {
-      this.dialog = false
       this.$emit('issueSubmit', this.formValues)
       this.resetFormValues()
     },
     resetIssue() {
-      this.resetFormValues()
       this.$emit('issueReset')
+      this.resetFormValues()
+    },
+    deleteIssue() {
+      this.$emit('issueDelete', this.formValues)
+      this.resetFormValues()
     },
     addRelated() {
       this.formValues.related.push(this.createEmptyRelatedItem())

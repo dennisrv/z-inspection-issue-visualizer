@@ -6,7 +6,7 @@ from django.views import View
 
 from .utils import (
     pydantic_validated,
-    get_all_as_cytoscape,
+    json_response_with_all_nodes_and_edges,
 )
 from ..models import (
     Issue,
@@ -16,15 +16,7 @@ from ..models import (
 class IndexView(View):
 
     def get(self, request: HttpRequest):
-        nodes, edges = get_all_as_cytoscape()
-
-        return JsonResponse({
-            "status": "success",
-            "data": {
-                'nodes': nodes,
-                'edges': edges
-            }
-        })
+        return json_response_with_all_nodes_and_edges()
 
     @pydantic_validated
     def post(self, request: HttpRequest):

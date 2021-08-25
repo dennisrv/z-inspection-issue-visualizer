@@ -3,7 +3,7 @@ from django.views import View
 
 from .utils import (
     pydantic_validated,
-    get_all_as_cytoscape,
+    json_response_with_all_nodes_and_edges,
 )
 from ..models import Issue
 
@@ -23,11 +23,11 @@ class IssueDetailView(View):
         issue.id = node_id
         issue.save_update()
 
-        nodes, edges = get_all_as_cytoscape()
-        return JsonResponse({
-            "status": "success",
-            "data": {
-                "nodes": nodes,
-                "edges": edges
-            }
-        })
+        return json_response_with_all_nodes_and_edges()
+
+    def delete(self, request, node_id):
+        issue = Issue.get_by_id(node_id)
+        issue.is_deleted = True
+        issue.save_update()
+
+        return json_response_with_all_nodes_and_edges()

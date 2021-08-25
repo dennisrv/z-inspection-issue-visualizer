@@ -11,6 +11,7 @@ from neomodel import (
     OneOrMore,
     ArrayProperty,
     StringProperty,
+    BooleanProperty,
 )
 from pydantic import Field
 
@@ -34,8 +35,13 @@ class IssueOrm(BaseNodeOrm):
         "flag": "Flag"
     })
     related = ArrayProperty(base_property=StringProperty())
+    is_deleted = BooleanProperty()
 
     related_to = RelationshipTo(SubRequirementOrm, 'RELATED_TO', cardinality=OneOrMore)
+
+    @classmethod
+    def get_all(cls) -> List[BaseNodeOrm]:
+        return cls.nodes.filter(is_deleted=False)
 
 
 class IssueTypeEnum(str, Enum):
@@ -71,10 +77,9 @@ class RelatedWrapper(list):
                 raise TypeError('Number of related elements must be a multiple of 3')
         return [{
             "principle": instance[i],
-            "requirement": instance[i+1],
-            "subRequirement": instance[i+2]
+            "requirement": instance[i + 1],
+            "subRequirement": instance[i + 2]
         } for i in range(0, len(instance), 3)]
-
 
 
 class Issue(BaseNode[IssueOrm]):
@@ -84,6 +89,7 @@ class Issue(BaseNode[IssueOrm]):
     issue_type: IssueTypeEnum = Field(alias="issueType")
     related: RelatedWrapper
     title: str = Field(alias="issueTitle")
+    is_deleted: bool = False
 
     class Config:
         orm_mode = True

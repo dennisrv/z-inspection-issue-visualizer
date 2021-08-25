@@ -30,9 +30,10 @@
                 title="Selected Issue"
                 submit-button-text="Update"
                 reset-button-text="Reset"
+                delete-button-text="Delete"
                 :initial-form-values="selectedIssueDetails"
-                :form-values="selectedIssueDetails"
                 v-on:issueSubmit="onIssueUpdate"
+                v-on:issueDelete="onIssueDelete"
             ></IssueDetailsCard>
           </v-col>
         </v-row>
@@ -129,6 +130,20 @@ export default {
               this.$cy.layout(this.cytoscapeLayoutConfig).run()
             })
           })
+    },
+    onIssueDelete(issueToDeleteData) {
+      if (confirm("Do you really want to delete this issue?")) {
+        let issueId = issueToDeleteData.id
+        http.deleteIssue(issueId)
+            .then((response) => {
+              let responseData = response.data.data
+              this.elements = responseData.nodes.concat(responseData.edges)
+              this.$nextTick().then(() => {
+                this.$cy.layout(this.cytoscapeLayoutConfig).run()
+                this.$cy.nodes().unselect()
+              })
+            })
+      }
     }
   },
   created() {
