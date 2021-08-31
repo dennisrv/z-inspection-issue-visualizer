@@ -1,7 +1,9 @@
 import axios from 'axios'
 
+const API_URL = '/api'
+
 const no_auth = axios.create({
-    baseURL: 'http://localhost:8000/api',
+    baseURL: API_URL,
     headers: {
         post: {
             "Content-Type": "application/json"
@@ -10,7 +12,7 @@ const no_auth = axios.create({
 });
 
 const with_auth = axios.create({
-    baseURL: 'http://localhost:8000/api',
+    baseURL: API_URL,
     xsrfCookieName: 'csrftoken',
     xsrfHeaderName: 'X-CSRFToken',
     withCredentials: true,

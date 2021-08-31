@@ -2,6 +2,7 @@
 .DS_Store
 node_modules
 /dist
+data/
 
 # local env files
 .env.local
@@ -21,3 +22,8 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+# do not allow compose environment variable files
+*.compose.conf
+# allow example variable file
+!example-environment.compose.conf

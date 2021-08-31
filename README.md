@@ -2,9 +2,32 @@
 Z-Inspection® Issue Explorer for easier mapping from free text to the key
 requirements for trustworthy AI. 
 
-Built with Vue.js and cytoscape.js on node:16.4.2
+Frontend built with Vue.js and cytoscape.js on node:16.4.2,
+backend built with django and neo4j
 
-## Project setup
+## Project setup (docker-compose)
+For an easy start to developing use the provided docker compose file.  
+1. Make a copy of `example-enviromnemt.compose.conf` called `<something>.compose.conf`, 
+with the `.compose.conf` file suffix it will be ignored by git 
+(please don't version your copy) 
+2. The following variables need to be set in that copy
+   1. NEO4J_DATA_DIR: storage location for neo4j data (i.e. `./data`)
+   2. NEO4J_USER: username for the neo4j instance (should be neo4j)
+   3. NEO4J_PASS: password for the neo4j instance 
+   4. DJANGO_SECRET_KEY: some long alphanumeric string, will be used by django
+3. With the file saved as `<env-file>`, run 
+    ```
+    docker-compose --env-file=<env-file> up
+    ```
+   to start the complete stack.
+4. Initialize the database by running 
+   ```
+   docker exec -it issue-explorer_backend_1 python manage.py setup_database 
+   ```
+5. The application can now be accessed at `localhost:8080`, and all changes in the code
+will lead to updates in the displayed application.
+
+## Project setup (manual)
 
 Frontend (web) was configured with yarn 1.22.5.
 ```

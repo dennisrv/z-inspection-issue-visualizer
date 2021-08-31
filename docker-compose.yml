@@ -1,0 +1,69 @@
+version: "3.9"
+
+services:
+  neo4j:
+    image: neo4j:3.5
+    volumes:
+      - ${NEO4J_DATA_DIR}/data:/data
+      - ${NEO4J_DATA_DIR}/logs:/logs
+      - ${NEO4J_DATA_DIR}/import:/var/lib/neo4j/import
+      - ${NEO4J_DATA_DIR}/plugins:/plugins
+    environment:
+      # the var=${var} is required to pass env variables from env file
+      # to the compose file, otherwise they are not set in the container
+      - NEO4J_auth=${NEO4J_USER}/${NEO4J_PASS}
+      - NEO4J_dbms_logs_debug_level=${NEO4J_dbms_logs_debug_level}
+      - NEO4J_dbms_connector_https_advertised__address=0.0.0.0:7473
+      - NEO4J_dbms_connector_http_advertised__address=0.0.0.0:7474
+      - NEO4J_dbms_connector_bolt_advertised__address=0.0.0.0:7687
+#    # uncomment this to enable access from outside of the docker network
+#    # (useful for i.e. local testing)
+#    ports:
+#      - "7473:7473"
+#      - "7474:7474"
+#      - "7687:7687"
+    networks:
+      - db-network
+  backend:
+    build:
+      context: ./django_api
+      dockerfile: dev.Dockerfile
+    environment:
+      - DJANGO_PORT=8000
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - NEO4J_USER=${NEO4J_USER}
+      - NEO4J_PASS=${NEO4J_PASS}
+      - NEO4J_IP=neo4j
+      - NEO4J_PORT=7687
+    volumes:
+      - ./django_api:/code
+#    # uncomment this to enable access from outside of the docker network
+#    # (useful for i.e. local testing)
+#    ports:
+#      - "8000:8000"
+    networks:
+      - db-network
+      - fronend-network
+    depends_on:
+      - neo4j
+  frontend:
+    build:
+      context: ./web
+      dockerfile: dev.Dockerfile
+    environment:
+      # only variables that start with VUE_APP_ are available in vue
+      - VUE_APP_API_URL=/api
+    volumes:
+      - ./web:/app
+    ports:
+      - "8080:8080"
+    networks:
+      - fronend-network
+    depends_on:
+      - backend
+
+networks:
+  db-network:
+    driver: bridge
+  fronend-network:
+    driver: bridge

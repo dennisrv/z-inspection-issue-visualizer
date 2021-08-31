@@ -15,7 +15,6 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-
 # Quick-start development config - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
@@ -25,8 +24,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ["backend"]
 
 # Application definition
 
@@ -37,14 +35,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',
-    'src.api.ApiConfig',
+    # 'corsheaders',
+    'src.api',
 ]
 
 MIDDLEWARE = [
     # this needs to be at the top, see
     # https://stackoverflow.com/questions/35760943/how-can-i-enable-cors-on-django-rest-framework/38162454#comment101678699_38162454
-    "corsheaders.middleware.CorsMiddleware",
+    # "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -74,7 +72,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'src.config.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
@@ -84,7 +81,11 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-NEO4J_BOLT_URL = "bolt://neo4j:test@localhost:7687"
+NEO4J_USER = os.environ.get("NEO4J_USER")
+NEO4J_PASS = os.environ.get("NEO4J_PASS")
+NEO4J_IP = os.environ.get("NEO4J_IP")
+NEO4J_PORT = os.environ.get("NEO4J_PORT")
+NEO4J_BOLT_URL = f"bolt://{NEO4J_USER}:{NEO4J_PASS}@{NEO4J_IP}:{NEO4J_PORT}"
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -104,11 +105,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8080"
-]
-CORS_ALLOW_CREDENTIALS = True
-CSRF_TRUSTED_ORIGINS = ['localhost:8080']
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:8080",
+#     "http://frontend:8080"
+# ]
+# CORS_ALLOW_CREDENTIALS = True
+# CSRF_TRUSTED_ORIGINS = ['localhost:8080', 'frontend:8080']
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
@@ -122,7 +124,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
