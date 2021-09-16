@@ -14,9 +14,12 @@
       </v-col>
       <v-col cols="4">
         <v-row>
-          <v-col cols="12">
+          <v-col cols="6">
             <!--    newIssue event is emitted by the component when click on submit happens   -->
             <NewIssueDialogButton v-on:newIssue="onNewIssue"></NewIssueDialogButton>
+          </v-col>
+          <v-col cols="6">
+            <FilterDialog v-on:filterSubmit="onFilterSubmit"></FilterDialog>
           </v-col>
         </v-row>
         <v-row>
@@ -51,10 +54,12 @@ import cytoscapeStyle from "@/constants/cytoscapeStyle";
 
 import NewIssueDialogButton from '@/components/NewIssueDialog'
 import IssueDetailsCard, {createEmptyIssueDetails} from '@/components/IssueDetailsCard'
+import FilterDialog, {createEmptyFilter} from "@/components/FilterDialog";
 
 export default {
   name: 'GraphView',
   components: {
+    FilterDialog,
     NewIssueDialogButton,
     IssueDetailsCard
   },
@@ -69,7 +74,8 @@ export default {
       style: cytoscapeStyle
     },
     elements: [],
-    selectedIssueDetails: createEmptyIssueDetails()
+    selectedIssueDetails: createEmptyIssueDetails(),
+    issueFilter: createEmptyFilter(),
   }),
   methods: {
     // inspired by https://github.com/rcarcasses/vue-cytoscape-cola/blob/master/src/App.vue
@@ -144,6 +150,10 @@ export default {
               })
             })
       }
+    },
+    onFilterSubmit(filterDetails) {
+      this.issueFilter = filterDetails
+      console.log(filterDetails)
     }
   },
   created() {

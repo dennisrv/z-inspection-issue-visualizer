@@ -11,7 +11,7 @@
           v-bind="attrs"
           v-on="on"
         >
-          New Ethical Issue / Flag
+          New Issue
         </v-btn>
       </template>
       <IssueDetailsCard
