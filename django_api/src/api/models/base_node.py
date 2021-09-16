@@ -1,21 +1,18 @@
 from __future__ import annotations
 
 from typing import (
-    TypeVar,
-    Generic,
     Optional,
-    get_args,
     List,
     Tuple,
     Dict
 )
 
+from neo4j.graph import Node
 from neomodel import (
     RelationshipManager,
     StringProperty,
-    StructuredNode, UniqueIdProperty,
-)
-from pydantic import BaseModel, Field
+    StructuredNode, )
+from pydantic import BaseModel
 
 
 class NodeList(object):
@@ -47,35 +44,7 @@ class NodeList(object):
         return f'NodeRelationship({[node.id for node in self.all()]})'
 
 
-class BaseNodeOrm(StructuredNode):
-    __abstract_node__ = True
-    title = StringProperty(index=True)
-
-    @classmethod
-    def get_all(cls) -> List[BaseNodeOrm]:
-        return cls.nodes.all()
-
-    @classmethod
-    def get_by_title(cls, *titles: str) -> List[BaseNodeOrm]:
-        return cls.nodes.filter(title__in=titles)
-
-    @classmethod
-    def get_by_id(cls, id_to_search: int) -> BaseNodeOrm:
-        # hack to get the node by id, not sure if this should be changed later
-        # as this is apparently not how it is supposed to be used
-        node = cls(id=id_to_search)
-        node.refresh()
-        return node
-
-
-OrmClass = TypeVar('OrmClass', bound=BaseNodeOrm)
-
-
-def get_generic_class(cls):
-    return get_args(cls.__orig_bases__[0])[0]
-
-
-class BaseNode(BaseModel, Generic[OrmClass]):
+class BaseNode(BaseModel):
     # neo4j internal id, will not be used much
     id: Optional[int]
     title: str
@@ -84,6 +53,26 @@ class BaseNode(BaseModel, Generic[OrmClass]):
 
     class Config:
         orm_mode = True
+
+    class OrmClass(StructuredNode):
+        __abstract_node__ = True
+        title = StringProperty(index=True)
+
+        @classmethod
+        def get_all(cls) -> List[BaseNode.OrmClass]:
+            return cls.nodes.all()
+
+        @classmethod
+        def get_by_title(cls, *titles: str) -> List[BaseNode.OrmClass]:
+            return cls.nodes.filter(title__in=titles)
+
+        @classmethod
+        def get_by_id(cls, id_to_search: int) -> BaseNode.OrmClass:
+            # hack to get the node by id, not sure if this should be changed later
+            # as this is apparently not how it is supposed to be used
+            node = cls(id=id_to_search)
+            node.refresh()
+            return node
 
     def to_cytoscape(self) -> Tuple[Dict[str, Dict], List[Dict[str, Dict]]]:
         return self.get_node_repr(), self.get_edges_repr()
@@ -115,19 +104,23 @@ class BaseNode(BaseModel, Generic[OrmClass]):
     @classmethod
     def get_first(cls, **kwargs) -> Optional[BaseNode]:
         # get actual class of the generic type parameter
-        data = get_generic_class(cls).nodes.first_or_none(**kwargs)
+        data = cls.OrmClass.nodes.first_or_none(**kwargs)
         if data is None:
             return None
         return cls.from_orm(data)
 
     @classmethod
     def get_all(cls) -> List[BaseNode]:
-        return [cls.from_orm(n) for n in get_generic_class(cls).get_all()]
+        return [cls.from_orm(n) for n in cls.OrmClass.get_all()]
 
     @classmethod
     def get_by_title(cls, *titles: str) -> List[BaseNode]:
-        return [cls.from_orm(n) for n in get_generic_class(cls).get_by_title(*titles)]
+        return [cls.from_orm(n) for n in cls.OrmClass.get_by_title(*titles)]
 
     @classmethod
     def get_by_id(cls, id_to_search: int) -> BaseNode:
-        return cls.from_orm(get_generic_class(cls).get_by_id(id_to_search))
+        return cls.from_orm(cls.OrmClass.get_by_id(id_to_search))
+
+    @classmethod
+    def from_raw(cls, raw_node: Node) -> BaseNode:
+        return cls.from_orm(cls.OrmClass.inflate(raw_node))

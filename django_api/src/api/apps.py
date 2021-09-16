@@ -1,9 +1,6 @@
 from django.apps import AppConfig
 from django.conf import settings
-from neomodel import (
-    config,
-    install_all_labels
-)
+from neomodel import config
 
 class ApiConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'

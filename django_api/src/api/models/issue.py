@@ -16,32 +16,8 @@ from neomodel import (
 from pydantic import Field
 
 from src.utils import flatten
-from .base_node import (
-    BaseNode,
-    BaseNodeOrm,
-)
-from .sub_requirement import SubRequirementOrm
-
-
-class IssueOrm(BaseNodeOrm):
-    # use __label__ if node label should not be the same as the class name
-    # taken from https://stackoverflow.com/a/43458696
-    __label__ = "Issue"
-
-    areas = ArrayProperty(base_property=StringProperty())
-    description = StringProperty()
-    issue_type = StringProperty(choices={
-        "ethical-issue": "Ethical Issue",
-        "flag": "Flag"
-    })
-    related = ArrayProperty(base_property=StringProperty())
-    is_deleted = BooleanProperty()
-
-    related_to = RelationshipTo(SubRequirementOrm, 'RELATED_TO', cardinality=OneOrMore)
-
-    @classmethod
-    def get_all(cls) -> List[BaseNodeOrm]:
-        return cls.nodes.filter(is_deleted=False)
+from .base_node import BaseNode
+from .sub_requirement import SubRequirement
 
 
 class IssueTypeEnum(str, Enum):
@@ -82,7 +58,7 @@ class RelatedWrapper(list):
         } for i in range(0, len(instance), 3)]
 
 
-class Issue(BaseNode[IssueOrm]):
+class Issue(BaseNode):
     areas: List[str]
     # define field aliases for easier conversion between js field names and python field names
     description: str = Field(alias="issueDescription")
@@ -94,6 +70,26 @@ class Issue(BaseNode[IssueOrm]):
     class Config:
         orm_mode = True
         allow_population_by_field_name = True
+
+    class OrmClass(BaseNode.OrmClass):
+        # use __label__ if node label should not be the same as the class name
+        # taken from https://stackoverflow.com/a/43458696
+        __label__ = "Issue"
+
+        areas = ArrayProperty(base_property=StringProperty())
+        description = StringProperty()
+        issue_type = StringProperty(choices={
+            "ethical-issue": "Ethical Issue",
+            "flag": "Flag"
+        })
+        related = ArrayProperty(base_property=StringProperty())
+        is_deleted = BooleanProperty()
+
+        related_to = RelationshipTo(SubRequirement.OrmClass, 'RELATED_TO', cardinality=OneOrMore)
+
+        @classmethod
+        def get_all(cls) -> List[Issue.OrmClass]:
+            return cls.nodes.filter(is_deleted=False)
 
     def get_node_repr(self) -> Dict[str, Dict]:
         node_repr = super().get_node_repr()
@@ -122,7 +118,7 @@ class Issue(BaseNode[IssueOrm]):
         issue_dict = self.dict(exclude=params_to_exclude)
         issue_dict['related'] = flatten([rel.values() for rel in self.related])
         issue_dict['issue_type'] = issue_dict['issue_type'].value
-        orm_issue = IssueOrm(**issue_dict).save()
+        orm_issue = self.OrmClass(**issue_dict).save()
 
         self.id = orm_issue.id
         self.related_to = []
@@ -130,7 +126,7 @@ class Issue(BaseNode[IssueOrm]):
         orm_issue.related_to.disconnect_all()
         if len(self.related) > 0:
             related_sub_requirements = [rel['subRequirement'] for rel in self.related]
-            for rel_req in SubRequirementOrm.get_by_title(*related_sub_requirements):
+            for rel_req in SubRequirement.OrmClass.get_by_title(*related_sub_requirements):
                 orm_issue.related_to.connect(rel_req)
                 self.related_to.append(rel_req.id)
 

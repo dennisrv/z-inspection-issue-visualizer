@@ -85,3 +85,6 @@ class IndexViewTest(Neo4jTestCase):
         # ensure the error description contains information on the missing parameters
         self.assertIsNotNone(json_data['data']['issueTitle'])
         self.assertIsNotNone(json_data['data']['issueType'])
+
+    def test_get_with_filter_should_return_filtered_nodeset(self):
+        pass
