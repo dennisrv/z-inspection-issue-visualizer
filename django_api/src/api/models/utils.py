@@ -14,7 +14,7 @@ CLASSES_BY_NAME = {
 CLASS_LABELS = frozenset(CLASSES_BY_NAME.keys())
 
 
-def filter_issues(contains_text=None, titles_of_related_nodes=[]):
+def filter_issues(contains_text=None, titles_of_related_nodes=None):
     """
     Filter issues, so that only issues which contain seleceted text in either their title or description
     along with sub-requirements, key-requirements and ethical issues that match the related nodes are selected
@@ -22,11 +22,16 @@ def filter_issues(contains_text=None, titles_of_related_nodes=[]):
     This is usesful to limit the information presented to i.e. only issues related to 'Fairness'
     or issues containing the word 'explanation'.
 
+    Note: probably not the best solution for this, but it works...
+
     :param contains_text: text to filter issues for, can appear either in title or description
     :param titles_of_related_nodes: related principles / requirements to filter for,
     if multiple are given, issues can relate to any of them
     :return: Sub-graph that matches the selection criteria
     """
+    if titles_of_related_nodes is None:
+        titles_of_related_nodes = list()
+
     # shortcut: return everything
     if contains_text is None and len(titles_of_related_nodes) == 0:
         return EthicalPrinciple.get_all() + KeyRequirement.get_all() + SubRequirement.get_all() + Issue.get_all()
@@ -43,7 +48,7 @@ def filter_issues(contains_text=None, titles_of_related_nodes=[]):
 
     if contains_text is not None:
         connection = "where" if num_related == 0 else "and"
-        query = query + "\n" + connection + " (i.title =~ '.*{contains_text}.*' or i.description =~ '.*{contains_text}.*')"
+        query = query + "\n" + connection + " (i.title CONTAINS {contains_text} or i.description CONTAINS {contains_text})"
 
     query = query + "\n return p"
 
@@ -65,5 +70,7 @@ def filter_issues(contains_text=None, titles_of_related_nodes=[]):
             # reconstruct edges, but only with nodes in selected paths
             if prev_node_id is not None and not current_node_id in nodes_by_id[prev_node_id].related_to:
                 nodes_by_id[prev_node_id].related_to.append(current_node_id)
+
+            prev_node_id = current_node_id
 
     return nodes_by_id.values()

@@ -6,17 +6,34 @@ from django.views import View
 
 from .utils import (
     pydantic_validated,
-    json_response_with_all_nodes_and_edges,
 )
 from ..models import (
     Issue,
 )
+from ..models import utils as model_utils
 
 
 class IndexView(View):
 
     def get(self, request: HttpRequest):
-        return json_response_with_all_nodes_and_edges()
+        search_text = request.GET.get('searchText', None)
+        related = request.GET.getlist('related', [])
+
+        node_data = model_utils.filter_issues(search_text, related)
+
+        nodes, edges = [], []
+        for d in node_data:
+            _node, _edges = d.to_cytoscape()
+            nodes.append(_node)
+            edges.extend(_edges)
+
+        return JsonResponse({
+            "status": "success",
+            "data": {
+                "nodes": nodes,
+                "edges": edges,
+            }
+        })
 
     @pydantic_validated
     def post(self, request: HttpRequest):

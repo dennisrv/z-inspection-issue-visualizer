@@ -1,7 +1,7 @@
 from integration.neo4j_test_case import Neo4jTestCase
 from src.api.models import Issue
-from util.test_objects import TestObjects
 from src.api.models.utils import filter_issues
+from util.test_objects import TestObjects
 
 
 class IssueTest(Neo4jTestCase):
@@ -60,4 +60,8 @@ class IssueTest(Neo4jTestCase):
             issue.save_new()
 
         fairness_nodes = filter_issues(titles_of_related_nodes=['Fairness'])
-        self.assertEqual(len(fairness_nodes), 8) # 5 issues + requirements + principle
+
+        fairness_issues = [i for i in fairness_nodes if type(i) is Issue]
+        self.assertEqual(len(fairness_issues), 5)
+
+        self.assertEqual(len(fairness_nodes), 8)  # 5 issues + requirements + principle
