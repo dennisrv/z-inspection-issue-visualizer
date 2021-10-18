@@ -186,7 +186,7 @@ export default {
     onFilterSubmit(filterDetails) {
       this.updateIssueFilter(filterDetails)
 
-      http.getFiltered(this.issueFilter)
+      http.getFiltered(this.issueFilter.containedText, this.issueFilter.related)
           .then(this.redrawElementsOnSuccess)
     },
     onMergeSubmit(mergeData) {
