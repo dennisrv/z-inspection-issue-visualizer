@@ -15,12 +15,15 @@
       </v-col>
       <v-col cols="4">
         <v-row>
-          <v-col cols="6">
+          <v-col cols="4">
             <!--    newIssue event is emitted by the component when click on submit happens   -->
             <NewIssueDialogButton v-on:newIssue="onNewIssue"></NewIssueDialogButton>
           </v-col>
-          <v-col cols="6">
+          <v-col cols="4">
             <FilterDialog v-on:filterSubmit="onFilterSubmit"></FilterDialog>
+          </v-col>
+          <v-col cols="4">
+            <MergeDialog :issues="this.issuesToMerge" v-on:mergeSubmit="onMergeSubmit"></MergeDialog>
           </v-col>
         </v-row>
         <v-row>
@@ -35,7 +38,7 @@
                 submit-button-text="Update"
                 reset-button-text="Reset"
                 delete-button-text="Delete"
-                :initial-form-values="selectedIssueDetails"
+                :initial-form-values="this.selectedIssueDetails"
                 v-on:issueSubmit="onIssueUpdate"
                 v-on:issueDelete="onIssueDelete"
             ></IssueDetailsCard>
@@ -50,19 +53,21 @@
 // change eslint rule according to  https://github.com/vuejs/eslint-plugin-vue/issues/1004#issuecomment-568978285
 // so it does not fail the dev build for this "unused" variable
 import dagre from "cytoscape-dagre"
-import http from "@/plugins/http"
-import cytoscapeStyle from "@/constants/cytoscapeStyle";
+import http from "../plugins/http"
+import cytoscapeStyle from "../constants/cytoscapeStyle";
 
-import NewIssueDialogButton from '@/components/NewIssueDialog'
-import IssueDetailsCard, {createEmptyIssueDetails} from '@/components/IssueDetailsCard'
-import FilterDialog, {createEmptyFilter} from "@/components/FilterDialog";
+import NewIssueDialogButton from './NewIssueDialog'
+import IssueDetailsCard, {createEmptyIssueDetails} from './IssueDetailsCard'
+import FilterDialog, {createEmptyFilter} from "./FilterDialog";
+import MergeDialog from "./MergeDialog";
 
 export default {
   name: 'GraphView',
   components: {
     FilterDialog,
     NewIssueDialogButton,
-    IssueDetailsCard
+    IssueDetailsCard,
+    MergeDialog,
   },
   data: () => ({
     $cy: {},
@@ -75,9 +80,29 @@ export default {
       style: cytoscapeStyle
     },
     elements: [],
-    selectedIssueDetails: createEmptyIssueDetails(),
+    selectedIssueIds: [null],
+    selectedIssuesById: {
+      null: createEmptyIssueDetails()
+    },
+    // selectedIssueDetails: createEmptyIssueDetails(),
     issueFilter: createEmptyFilter(),
   }),
+  computed: {
+    selectedIssueDetails: function () {
+      return this.selectedIssuesById[this.selectedIssueIds[this.selectedIssueIds.length - 1]]
+    },
+    issuesToMerge: function () {
+      if (this.selectedIssueIds.length <= 2) {
+        return {
+          error: "Please select 2 issues to merge."
+        }
+      }
+      return {
+        issue1: this.selectedIssuesById[this.selectedIssueIds[this.selectedIssueIds.length - 1]],
+        issue2: this.selectedIssuesById[this.selectedIssueIds[this.selectedIssueIds.length - 2]],
+      }
+    }
+  },
   methods: {
     // inspired by https://github.com/rcarcasses/vue-cytoscape-cola/blob/master/src/App.vue
     preConfig(cytoscape) {
@@ -93,12 +118,20 @@ export default {
       this.$cy = cy
       this.$cy.layout(this.cytoscapeLayoutConfig).run()
       this.$cy.on('select', '.issue', event => {
-        this.selectedIssueDetails = event.target._private.data.issueDetails
+        let eventData = event.target._private.data
+        let issueId = Number(eventData.id)
+        let issueDetails = eventData.issueDetails
+
+        this.selectedIssuesById[issueDetails.id] = issueDetails
+        this.selectedIssueIds.push(issueId)
       })
-      this.$cy.on('unselect', '.issue', () => {
-        if (this.$cy.$(':selected').length === 0) {
-          this.selectedIssueDetails = createEmptyIssueDetails()
-        }
+      this.$cy.on('unselect', '.issue', event => {
+        let issueId = Number(event.target._private.data.id)
+
+        let index = this.selectedIssueIds.indexOf(issueId)
+        this.selectedIssueIds.splice(index, 1)
+
+        this.selectedIssuesById[issueId] = null
       })
     },
     onNewIssue(newIssueData) {
@@ -127,29 +160,18 @@ export default {
     onIssueUpdate(updatedIssueData) {
       // hack so issue details do not change back to previous value on button press only for the
       // change to change again to the updated value once the response is processed
-      this.selectedIssueDetails = updatedIssueData
       let issueId = updatedIssueData.id
+      this.selectedIssuesById[issueId] = updatedIssueData
+      this.selectedIssueIds.push(updatedIssueData.id)
+
       http.updateIssue(issueId, updatedIssueData)
-          .then((response) => {
-            let responseData = response.data.data
-            this.elements = responseData.nodes.concat(responseData.edges)
-            this.$nextTick().then(() => {
-              this.$cy.layout(this.cytoscapeLayoutConfig).run()
-            })
-          })
+          .then((response) => this.redrawElementsOnSuccess(response, false))
     },
     onIssueDelete(issueToDeleteData) {
       if (confirm("Do you really want to delete this issue?")) {
         let issueId = issueToDeleteData.id
         http.deleteIssue(issueId)
-            .then((response) => {
-              let responseData = response.data.data
-              this.elements = responseData.nodes.concat(responseData.edges)
-              this.$nextTick().then(() => {
-                this.$cy.layout(this.cytoscapeLayoutConfig).run()
-                this.$cy.nodes().unselect()
-              })
-            })
+            .then(this.redrawElementsOnSuccess)
       }
     },
     updateIssueFilter(filterDetails) {
@@ -165,19 +187,25 @@ export default {
       this.updateIssueFilter(filterDetails)
 
       http.getFiltered(this.issueFilter)
-          .then((response) => {
-            let resp = response.data
-            if (resp.status === "success") {
-              let responseData = resp.data
-              this.elements = responseData.nodes.concat(responseData.edges)
-              this.$nextTick().then( () => {
-                this.$cy.layout(this.cytoscapeLayoutConfig).run()
-                this.$cy.nodes().unselect()
-              })
-            }
-          })
-      console.log(filterDetails)
-    }
+          .then(this.redrawElementsOnSuccess)
+    },
+    onMergeSubmit(mergeData) {
+      http.mergeIssues(mergeData)
+          .then(this.redrawElementsOnSuccess)
+    },
+    redrawElementsOnSuccess(response, unselect=true) {
+      let resp = response.data
+      if (resp.status === "success") {
+        let responseData = resp.data
+        this.elements = responseData.nodes.concat(responseData.edges)
+        this.$nextTick().then(() => {
+          this.$cy.layout(this.cytoscapeLayoutConfig).run()
+          if (unselect) {
+            this.$cy.nodes().unselect()
+          }
+        })
+      }
+    },
   },
   created() {
     http.getAll()

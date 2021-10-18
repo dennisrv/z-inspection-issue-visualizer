@@ -51,10 +51,15 @@ function deleteIssue(issueId) {
     return with_auth.delete(`/nodes/${issueId}`)
 }
 
+function mergeIssues(mergeData) {
+    return with_auth.post('/nodes/merge', mergeData)
+}
+
 export default {
     getAll,
     getFiltered,
     createNewIssue,
     updateIssue,
     deleteIssue,
+    mergeIssues,
 };
