@@ -72,5 +72,6 @@ def filter_issues(contains_text=None, titles_of_related_nodes=None):
                 nodes_by_id[prev_node_id].related_to.append(current_node_id)
 
             prev_node_id = current_node_id
+        prev_node_id = None
 
     return nodes_by_id.values()

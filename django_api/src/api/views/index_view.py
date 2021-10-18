@@ -17,7 +17,7 @@ class IndexView(View):
 
     def get(self, request: HttpRequest):
         search_text = request.GET.get('searchText', None)
-        related = request.GET.getlist('related', [])
+        related = request.GET.getlist('related[]', [])
 
         node_data = model_utils.filter_issues(search_text, related)
 

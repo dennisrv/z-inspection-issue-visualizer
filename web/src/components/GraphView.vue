@@ -3,7 +3,8 @@
     <v-row>
       <v-col cols="8" class="grey lighten-5">
         <!--    cytoscape core instance is now available at this.$refs['cytoscape-component']    -->
-        <cytoscape v-if="this.elements.length" ref="cytoscape-component" :config="this.cytoscapeConfig" :preConfig="preConfig"
+        <cytoscape v-if="this.elements.length" ref="cytoscape-component" :config="this.cytoscapeConfig"
+                   :preConfig="preConfig"
                    :afterCreated="afterGraphCreated">
           <cy-element
               v-for="def in this.elements"
@@ -151,8 +152,30 @@ export default {
             })
       }
     },
+    updateIssueFilter(filterDetails) {
+      this.issueFilter.containedText = filterDetails.containedText
+      let related = filterDetails.related.map((el) => (el.subRequirement || el.requirement) || el.principle)
+      // special case: no value set
+      if (related.length === 1 && related[0] === null) {
+        related = null
+      }
+      this.issueFilter.related = related
+    },
     onFilterSubmit(filterDetails) {
-      this.issueFilter = filterDetails
+      this.updateIssueFilter(filterDetails)
+
+      http.getFiltered(this.issueFilter)
+          .then((response) => {
+            let resp = response.data
+            if (resp.status === "success") {
+              let responseData = resp.data
+              this.elements = responseData.nodes.concat(responseData.edges)
+              this.$nextTick().then( () => {
+                this.$cy.layout(this.cytoscapeLayoutConfig).run()
+                this.$cy.nodes().unselect()
+              })
+            }
+          })
       console.log(filterDetails)
     }
   },
@@ -160,7 +183,7 @@ export default {
     http.getAll()
         .then((response) => {
           let responseData = response.data
-          if(responseData.status === "success") {
+          if (responseData.status === "success") {
             this.elements = responseData.data.nodes.concat(responseData.data.edges)
           }
         })

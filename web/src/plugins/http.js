@@ -23,10 +23,20 @@ const with_auth = axios.create({
     },
 })
 
-no_auth.get('/auth')
+no_auth.get('/auth').then(() => console.log("Cookie set"))
 
 function getAll() {
     return no_auth.get('/nodes')
+}
+
+function getFiltered(searchText, related) {
+    return no_auth.get('/nodes', {
+        params:
+            {
+                searchText: searchText,
+                related: related
+            }
+    })
 }
 
 function createNewIssue(postData) {
@@ -43,6 +53,7 @@ function deleteIssue(issueId) {
 
 export default {
     getAll,
+    getFiltered,
     createNewIssue,
     updateIssue,
     deleteIssue,

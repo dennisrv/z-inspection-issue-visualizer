@@ -130,7 +130,7 @@ class IndexViewTest(Neo4jTestCase):
             i.save_new()
 
         principle = test_issues[0].related[0]['principle']
-        resp = Client().get('/api/nodes/', {'related': principle}, HTTP_ACCEPT='application_json')
+        resp = Client().get('/api/nodes/', {'related[]': principle}, HTTP_ACCEPT='application_json')
         self.assertEqual(resp.status_code, 200)
 
         json_data = resp.json()
@@ -153,7 +153,7 @@ class IndexViewTest(Neo4jTestCase):
         key_requirement = test_issues[1].related[0]['requirement']
         sub_requirement = test_issues[2].related[0]['subRequirement']
 
-        resp = Client().get('/api/nodes/', {'related': (principle, key_requirement, sub_requirement)},
+        resp = Client().get('/api/nodes/', {'related[]': (principle, key_requirement, sub_requirement)},
                             HTTP_ACCEPT='application_json')
 
         self.assertEqual(resp.status_code, 200)
