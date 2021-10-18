@@ -27,7 +27,7 @@ class IssueDetailView(View):
 
     def delete(self, request, node_id):
         issue = Issue.get_by_id(node_id)
-        issue.is_deleted = True
+        issue.delete()
         issue.save_update()
 
         return json_response_with_all_nodes_and_edges()

@@ -178,21 +178,6 @@ import {
 } from '../constants/principlesAndRequirements'
 import {createEmptyIssueDetails} from "./IssueDetailsCard";
 
-function createEmptyRelatedItem() {
-  return {
-    principle: null,
-    requirement: null,
-    subRequirement: null
-  }
-}
-
-export function createEmptyFilter() {
-  return {
-    containedText: null,
-    related: [createEmptyRelatedItem()]
-  }
-}
-
 export default {
   name: 'MergeDialog',
   props: ['issues'],

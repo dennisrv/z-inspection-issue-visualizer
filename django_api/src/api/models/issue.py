@@ -114,6 +114,9 @@ class Issue(BaseNode):
         # issue exists in db => issue has id => id can be used
         return self._save(params_to_exclude={'related_to'})
 
+    def delete(self):
+        self.is_deleted = True
+
     def _save(self, params_to_exclude: Set[str]) -> Issue:
         issue_dict = self.dict(exclude=params_to_exclude)
         issue_dict['related'] = flatten([rel.values() for rel in self.related])

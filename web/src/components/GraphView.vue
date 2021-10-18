@@ -191,9 +191,13 @@ export default {
     },
     onMergeSubmit(mergeData) {
       http.mergeIssues(mergeData)
-          .then(this.redrawElementsOnSuccess)
+          .then((response) => {
+            this.redrawElementsOnSuccess(response, true)
+            let newIssueId = response.data.data.newIssueId
+            this.$nextTick().then(() => this.$cy.nodes(`[id @= '${newIssueId}']`).select())
+          })
     },
-    redrawElementsOnSuccess(response, unselect=true) {
+    redrawElementsOnSuccess(response, unselect = true) {
       let resp = response.data
       if (resp.status === "success") {
         let responseData = resp.data
