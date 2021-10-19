@@ -6,6 +6,7 @@ from django.test import (
     Client,
 )
 
+from src.api.models import Issue
 from integration.neo4j_test_case import Neo4jTestCase
 from util.test_objects import TestObjects
 
@@ -168,3 +169,34 @@ class IndexViewTest(Neo4jTestCase):
         returned_issues = [n for n in nodes if "issue" in n['classes']]
         self.assertGreaterEqual(len(returned_issues), 3)
         self.assertGreaterEqual(len(edges), 5)
+
+    def test_filter_should_not_return_deleted(self):
+        test_issues = [TestObjects.create_issue() for _ in range(5)]
+        for i in test_issues:
+            i.title += "testmessage"
+            i.save_new()
+
+        self.assertEqual(len(Issue.get_all()), 5)
+
+        test_issues[0].delete()
+        test_issues[0].save_update()
+
+        self.assertEqual(len(Issue.get_all()), 4)
+
+        resp = Client().get('/api/nodes/', {'searchText': "testmessage"},
+                            HTTP_ACCEPT='application_json')
+
+        self.assertEqual(resp.status_code, 200)
+
+        json_data = resp.json()
+        self.assertEqual(json_data['status'], 'success')
+        self.assertIsNotNone(json_data['data'])
+
+        nodes = json_data['data']['nodes']
+
+        returned_issues = [n for n in nodes if "issue" in n['classes']]
+        self.assertEqual(len(returned_issues), 4)
+
+
+
+

@@ -36,7 +36,8 @@ def filter_issues(contains_text=None, titles_of_related_nodes=None):
     if contains_text is None and len(titles_of_related_nodes) == 0:
         return EthicalPrinciple.get_all() + KeyRequirement.get_all() + SubRequirement.get_all() + Issue.get_all()
 
-    query = "match p = (i: Issue) -[:RELATED_TO*0..]-> (m) -[:RELATED_TO*0..]-> (o)"
+    query = "match p = (i: Issue) -[:RELATED_TO*0..]-> (m) -[:RELATED_TO*0..]-> (o) " \
+            "\nwhere not i.is_deleted"
     num_related = len(titles_of_related_nodes)
     query_params = {
         f"title{i}": v
@@ -44,13 +45,12 @@ def filter_issues(contains_text=None, titles_of_related_nodes=None):
     }
     query_params['contains_text'] = contains_text
     if num_related > 0:
-        query = query + "\n where (" + " or ".join([f"m.title = {{title{i}}}" for i in range(num_related)]) + ")"
+        query = query + "\nand (" + " or ".join([f"m.title = {{title{i}}}" for i in range(num_related)]) + ")"
 
     if contains_text is not None:
-        connection = "where" if num_related == 0 else "and"
-        query = query + "\n" + connection + " (i.title CONTAINS {contains_text} or i.description CONTAINS {contains_text})"
+        query = query + "\nand (i.title CONTAINS {contains_text} or i.description CONTAINS {contains_text})"
 
-    query = query + "\n return p"
+    query = query + "\nreturn p"
 
     res, _ = db.cypher_query(query, params=query_params)
 
