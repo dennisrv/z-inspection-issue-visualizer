@@ -1,0 +1,18 @@
+WG technical
+ID Ethical Issue: E1, Small size of the training data set.
+Description: The Brixia dataset might not be large enough to allow for sufficient generalization to other populations.
+Map to Ethical Pillars / Requirements / Sub-requirements (closed vocabulary):
+Prevention of harm > Technical Robustness and Safety > Reliability and Reproducibility
+Prevention of harm > Technical Robustness and Safety > Fall-back plans and general safety
+Narrative Response:The Brixia dataset is used for fine tuning of the model with 20 Million weight parameters. While the training process uses different augmentation techniques to increase the available training data, the Brixia dataset might not be large enough to allow for sufficient generalization to other populations. An inspection of good practices defining the number of images needed to train a complex model may help to assess the risks associated with the small number of training samples. While the model is employing transfer learning to reduce the amount of images required, we are not sure if 5000 images is enough to capture the variance of this complex problem. It needs to be ensured that the dataset is representative of the entire population of lungs (including varying degrees of damages) that are plausibly inspected by radiologists.
+
+WG social
+ID Ethical Issue: E2, Data lacks representational fairness.
+Description: The dataset used for training is likely not representative for the general population it is currently used on.
+Map to Ethical Pillars / Requirements / Sub-requirements (closed vocabulary):
+Fairness > Diversity, Non-Discrimination and Fairness > Avoidance of unfair bias
+Prevention of harm > Technical Robustness and Safety > Accuracy
+Narrative Response: The training data consists of CXR images collected over the course of only one month at the beginning of the pandemic and from only one hospital. During the beginning of the pandemic mainly older people were affected by critical conditions. It is therefore not certain that sufficient data of the younger population is available. This is problematic, as with the current vaccination progress and mutations they have a much higher likelihood of critical conditions than in the beginning. Data from children or pregnant women is equally missing. Furthermore, data from women in general appears to be underrepresented in the dataset. Ethnicity is not reported in the dataset so there is no way to ensure the collected dataset contains sufficient observations of minorities. A classifier trained on such a non-representative dataset might not perform equally well for some sub-groups of the population it is used on.
+
+It is also not clear if different ethnicities have different lung symptoms from Covid-19 infections. The population of the region where the data was collected is ~80% Italian origin, which could lead to problems if in the future the AI system is intended to be deployed in areas with a disparate demographic distribution.
+There may be limitations on the available dataset used as discussed above due to the regional population diversity served by the hospital. However, it is necessary to highlight those limitations in terms of age, gender, ethnicity etc. Also it is necessary to test the system performance limitations for such data limitations to improve the systems trustworthiness.
