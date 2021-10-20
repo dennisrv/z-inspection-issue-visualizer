@@ -3,7 +3,7 @@ from django.views import View
 
 from .utils import (
     pydantic_validated,
-    json_response_with_all_nodes_and_edges,
+    json_response_with_all_nodes_and_edges, get_all_nodes_and_edges,
 )
 from ..models import Issue
 
@@ -23,7 +23,15 @@ class IssueDetailView(View):
         issue.id = node_id
         issue.save_update()
 
-        return json_response_with_all_nodes_and_edges()
+        nodes, edges = get_all_nodes_and_edges()
+        return JsonResponse({
+            'status': "success",
+            'data': {
+                "nodes": nodes,
+                "edges": edges,
+                "updatedIssue": issue.get_node_repr()
+            }
+        })
 
     def delete(self, request, node_id):
         issue = Issue.get_by_id(node_id)

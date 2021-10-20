@@ -105,7 +105,12 @@ class Issue(BaseNode):
         return node_repr
 
     def cytoscape_class(self) -> str:
-        return "issue"
+        # area / group is used for coloring
+        # give it a separate color if it is from multiple groups / merged
+        if len(self.areas) > 1:
+            return "issue multiple-groups"
+        else:
+            return " ".join(["issue"] + [a.lower() for a in self.areas])
 
     def save_new(self):
         # don't use current issue id (will be set by db)

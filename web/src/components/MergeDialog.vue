@@ -177,6 +177,7 @@ import {
   requirementsSubrequirementsMap
 } from '../constants/principlesAndRequirements'
 import {createEmptyIssueDetails} from "./IssueDetailsCard";
+import {groups} from "../constants/cytoscapeStyle";
 
 export default {
   name: 'MergeDialog',
@@ -195,7 +196,7 @@ export default {
           value: 'flag'
         }
       ],
-      areas: ['Ethical', 'Social', 'Medical', 'Technical', 'Regulatory'],
+      areas: groups,
     },
     formRules: {
       typeRules: [

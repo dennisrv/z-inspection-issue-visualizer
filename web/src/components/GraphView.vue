@@ -169,6 +169,7 @@ export default {
 
         this.selectedIssuesById[issueDetails.id] = issueDetails
         this.selectedIssueIds.push(issueId)
+        console.log(event)
       })
       this.$cy.on('unselect', '.issue', event => {
         let issueId = Number(event.target._private.data.id)
@@ -207,10 +208,16 @@ export default {
       // change to change again to the updated value once the response is processed
       let issueId = updatedIssueData.id
       this.selectedIssuesById[issueId] = updatedIssueData
-      this.selectedIssueIds.push(updatedIssueData.id)
+      // this.selectedIssueIds.push(updatedIssueData.id)
 
       http.updateIssue(issueId, updatedIssueData)
-          .then((response) => this.redrawElementsOnSuccess(response, false))
+          .then((response) => {
+            this.redrawElementsOnSuccess(response, false)
+            // this is required to update how the node is displayed,
+            // for some reason the classes are not updated on existing nodes,
+            // except if you do it by hand
+            this.$cy.nodes(`[id @= '${issueId}']`).classes(response.data.data.updatedIssue.classes)
+          })
     },
     onIssueDelete(issueToDeleteData) {
       if (confirm("Do you really want to delete this issue?")) {

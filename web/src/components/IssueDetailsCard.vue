@@ -142,7 +142,8 @@ import {
   ethicalPrinciples,
   principlesRequirementsMap,
   requirementsSubrequirementsMap
-} from '@/constants/principlesAndRequirements'
+} from '../constants/principlesAndRequirements'
+import { groups } from '../constants/cytoscapeStyle'
 
 export const createEmptyIssueDetails = function () {
   return {
@@ -195,7 +196,7 @@ export default {
           value: 'flag'
         }
       ],
-      areas: ['Ethical', 'Social', 'Medical', 'Technical', 'Regulatory'],
+      areas: groups,
     },
     formRules: {
       typeRules: [

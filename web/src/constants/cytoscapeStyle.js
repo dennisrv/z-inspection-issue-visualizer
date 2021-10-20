@@ -9,7 +9,8 @@ const cytoscapeStyle = [
             "text-halign": "center",
             "text-wrap": "wrap",
             "text-max-width": "80%",
-            "font-size": "11pt"
+            "font-size": "11pt",
+            "background-color": "#b3b3b3"
         }
     },
     {
@@ -24,7 +25,7 @@ const cytoscapeStyle = [
         style: {
             "height": "80%",
             "width": "210%",
-            "background-color": "#7C96ED",
+            // "background-color": "#7C96ED",
             "text-wrap": "wrap",
             "text-max-width": "130%",
             "font-size": "18pt"
@@ -35,7 +36,7 @@ const cytoscapeStyle = [
         style: {
             "height": "60%",
             "width": "160%",
-            "background-color": "#7CEDD3",
+            // "background-color": "#7CEDD3",
             "text-wrap": "wrap",
             "text-max-width": "100%",
             "font-size": "14pt"
@@ -44,21 +45,14 @@ const cytoscapeStyle = [
     {
         selector: ".sub-requirement",
         style: {
-            "background-color": "#96ed7c"
+            // "background-color": "#96ed7c"
         }
     },
     {
-        selector: ".ethical-issue",
+        selector: ".issue",
         style: {
             "shape": "round-rectangle",
-            "background-color": "#ff9980"
-        }
-    },
-    {
-        selector: ".flag",
-        style: {
-            "shape": "round-rectangle",
-            "background-color": "#ffea80"
+            "background-color": "rgba(16,96,5,0.88)"
         }
     },
     {
@@ -68,5 +62,19 @@ const cytoscapeStyle = [
       }
     }
 ]
+
+export const groups = ["technical", "ethical", "medical", "legal", "social"]
+const colors = ["#d7191c", "#fdae61", "#ffffbf", "#abdda4", "#2b83ba"]
+
+let group_styles = []
+for (let i = 0; i < groups.length; i++) {
+    group_styles.push({
+        selector: `.${groups[i]}`,
+        style: {
+            "background-color": colors[i]
+        }
+    })
+}
+cytoscapeStyle.push(...group_styles)
 
 export default cytoscapeStyle
