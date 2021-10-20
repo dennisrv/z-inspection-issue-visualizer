@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import itertools
 from enum import Enum
 from typing import (
     List,
@@ -128,8 +129,21 @@ class Issue(BaseNode):
 
         orm_issue.related_to.disconnect_all()
         if len(self.related) > 0:
-            related_sub_requirements = [rel['subRequirement'] for rel in self.related]
-            for rel_req in SubRequirement.OrmClass.get_by_title(*related_sub_requirements):
+            related_sub_requirement_names = [rel['subRequirement'] for rel in self.related]
+            related_sub_requirements = SubRequirement.OrmClass.get_by_title(*related_sub_requirement_names)
+            if len(related_sub_requirements) < len(related_sub_requirement_names):
+                # check which sub_requirements were not found
+                required_names = set(related_sub_requirement_names)
+                found_names = set([rel.title for rel in related_sub_requirements])
+                missing_names = required_names - found_names
+                print(f'No exact match for subRequirements {missing_names}')
+                print('Using approximate matching instead')
+                approximate_requirements = SubRequirement.OrmClass.get_by_approximate_title(*missing_names)
+                found_names = [rel.title for rel in approximate_requirements]
+                print(f'Found {found_names} with approximate matching')
+                related_sub_requirements = itertools.chain(related_sub_requirements, approximate_requirements)
+
+            for rel_req in related_sub_requirements:
                 orm_issue.related_to.connect(rel_req)
                 self.related_to.append(rel_req.id)
 

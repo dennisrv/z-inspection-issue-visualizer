@@ -67,12 +67,25 @@ class BaseNode(BaseModel):
             return cls.nodes.filter(title__in=titles)
 
         @classmethod
+        def get_by_approximate_title(cls, *titles: str) -> List[BaseNode.OrmClass]:
+            """
+            Approximate title matching: use first word of provided title to check for
+            nodes that start with the same title (case insensitive)
+            :param titles:
+            :return:
+            """
+            approximate_titles = [title.lower().split(" ")[0] for title in titles]
+            found_nodes = [cls.nodes.first_or_none(title__istartswith=apx_title) for apx_title in approximate_titles]
+            return [n for n in found_nodes if n is not None]
+
+        @classmethod
         def get_by_id(cls, id_to_search: int) -> BaseNode.OrmClass:
             # hack to get the node by id, not sure if this should be changed later
             # as this is apparently not how it is supposed to be used
             node = cls(id=id_to_search)
             node.refresh()
             return node
+
 
     def to_cytoscape(self) -> Tuple[Dict[str, Dict], List[Dict[str, Dict]]]:
         return self.get_node_repr(), self.get_edges_repr()

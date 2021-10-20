@@ -65,3 +65,30 @@ class IssueTest(Neo4jTestCase):
         self.assertEqual(len(fairness_issues), 5)
 
         self.assertEqual(len(fairness_nodes), 8)  # 5 issues + requirements + principle
+
+    def test_approximate_sub_requirement_matching(self):
+        issue = TestObjects.create_issue()
+        issue.related = [{
+            "principle": "Fairness",
+            "requirement": "Diversity, non-discrimination and fairness",
+            "subRequirement": "Avoidance of bias" # should be "unfair bias"
+        }]
+        issue.save_new()
+
+        self.assertIsNotNone(issue.id)
+        self.assertIsNotNone(issue.related_to)
+        self.assertIsNotNone(issue.related_to)
+
+    def test_normal_and_approximate_requirement_matching(self):
+        issue = TestObjects.create_issue()
+        issue.related = issue.related[:1]
+        issue.related.append({
+            "principle": "Fairness",
+            "requirement": "Diversity, non-discrimination and fairness",
+            "subRequirement": "Avoidance of bias"  # should be "unfair bias"
+        })
+        issue.save_new()
+
+        self.assertIsNotNone(issue.id)
+        self.assertEqual(len(issue.related), 2)
+        self.assertEqual(len(issue.related_to), 2)
