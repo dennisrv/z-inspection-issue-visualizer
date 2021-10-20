@@ -55,6 +55,17 @@ function mergeIssues(mergeData) {
     return with_auth.post('/nodes/merge', mergeData)
 }
 
+function uploadFile(fileToUpload) {
+    let formData = new FormData()
+    formData.append('issues', fileToUpload)
+
+    return with_auth.post('/nodes/import', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })
+}
+
 export default {
     getAll,
     getFiltered,
@@ -62,4 +73,5 @@ export default {
     updateIssue,
     deleteIssue,
     mergeIssues,
+    uploadFile,
 };

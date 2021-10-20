@@ -44,6 +44,50 @@
             ></IssueDetailsCard>
           </v-col>
         </v-row>
+        <v-row>
+          <v-col cols="12">
+            <v-divider></v-divider>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="12">
+            <v-card>
+              <v-card-title>
+                Actions
+              </v-card-title>
+              <v-card-text>
+                <v-form>
+                  <v-row>
+                    <v-col cols="10">
+                      <v-file-input
+                          dense
+                          v-model="file"
+                          color="deep-purple accent-4"
+                          label="Issue File"
+                          placeholder="Select text file containing issues"
+                          prepend-icon="mdi-paperclip"
+                          outlined
+                      >
+                      </v-file-input>
+                    </v-col>
+                    <v-col cols="2">
+                      <v-btn
+                          small
+                          fab
+                          color="blue darken-1"
+                          type="button"
+                          :disabled="!file"
+                          @click="uploadIssueFile()"
+                      >
+                        <v-icon>mdi-upload</v-icon>
+                      </v-btn>
+                    </v-col>
+                  </v-row>
+                </v-form>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
       </v-col>
     </v-row>
   </v-container>
@@ -71,6 +115,7 @@ export default {
   },
   data: () => ({
     $cy: {},
+    file: [],
     cytoscapeLayoutConfig: {
       name: 'dagre',
       rankDir: 'RL'
@@ -189,6 +234,12 @@ export default {
       http.getFiltered(this.issueFilter.containedText, this.issueFilter.related)
           .then(this.redrawElementsOnSuccess)
     },
+    uploadIssueFile() {
+      let fileToUpload = this.file
+      http.uploadFile(fileToUpload)
+          .then(this.redrawElementsOnSuccess)
+          .then(() => this.file = [])
+    },
     onMergeSubmit(mergeData) {
       http.mergeIssues(mergeData)
           .then((response) => {
@@ -218,6 +269,9 @@ export default {
           if (responseData.status === "success") {
             this.elements = responseData.data.nodes.concat(responseData.data.edges)
           }
+        })
+        .catch( (error) => {
+          alert(error.data.message)
         })
   },
 }

@@ -17,7 +17,10 @@ class ImportView(View):
 
     def post(self, request: HttpRequest):
         if not 'issues' in request.FILES:
-            return None
+            return JsonResponse({
+                'status': 'error',
+                'message': request.FILES.keys()
+            })
         issue_file = request.FILES['issues']  # type: InMemoryUploadedFile
 
         current_group = None
