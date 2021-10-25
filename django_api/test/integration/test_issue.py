@@ -1,6 +1,5 @@
 from integration.neo4j_test_case import Neo4jTestCase
 from src.api.models import Issue
-from src.api.models.utils import filter_issues
 from util.test_objects import TestObjects
 
 
@@ -42,36 +41,12 @@ class IssueTest(Neo4jTestCase):
         issue_from_db = Issue.get_by_id(id_before)
         self.assertEquals(issue, issue_from_db)
 
-    def test_filter_issue(self):
-        related_issues = [TestObjects.create_issue() for _ in range(5)]
-        for issue in related_issues:
-            # ensure issues relate to this
-            issue.related = list({v['subRequirement']: v for v in issue.related + [{
-                "principle": "Fairness",
-                "requirement": "Accountability",
-                "subRequirement": "Auditability"
-            }]}.values())
-            issue.save_new()
-
-        unrelated_issues = [TestObjects.create_issue() for _ in range(5)]
-        for issue in unrelated_issues:
-            # ensure issues don't relate to this
-            issue.related = [rel for rel in issue.related if rel['subRequirement'] != "Auditability"]
-            issue.save_new()
-
-        fairness_nodes = filter_issues(titles_of_related_nodes=['Fairness'])
-
-        fairness_issues = [i for i in fairness_nodes if type(i) is Issue]
-        self.assertEqual(len(fairness_issues), 5)
-
-        self.assertEqual(len(fairness_nodes), 8)  # 5 issues + requirements + principle
-
     def test_approximate_sub_requirement_matching(self):
         issue = TestObjects.create_issue()
         issue.related = [{
             "principle": "Fairness",
             "requirement": "Diversity, non-discrimination and fairness",
-            "subRequirement": "Avoidance of bias" # should be "unfair bias"
+            "subRequirement": "Avoidance of bias"  # should be "unfair bias"
         }]
         issue.save_new()
 

@@ -234,11 +234,12 @@ export default {
         related = null
       }
       this.issueFilter.related = related
+      this.issueFilter.aggregationLevel = filterDetails.aggregationLevel
     },
     onFilterSubmit(filterDetails) {
       this.updateIssueFilter(filterDetails)
 
-      http.getFiltered(this.issueFilter.containedText, this.issueFilter.related)
+      http.getFiltered(this.issueFilter)
           .then(this.redrawElementsOnSuccess)
     },
     uploadIssueFile() {

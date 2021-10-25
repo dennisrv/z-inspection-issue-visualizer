@@ -18,8 +18,9 @@ class IndexView(View):
     def get(self, request: HttpRequest):
         search_text = request.GET.get('searchText', None)
         related = request.GET.getlist('related[]', [])
+        aggregation_level = request.GET.get('aggregationLevel', None)
 
-        node_data = model_utils.filter_issues(search_text, related)
+        node_data = model_utils.filter_issues(search_text, related, aggregation_level)
 
         nodes, edges = [], []
         for d in node_data:

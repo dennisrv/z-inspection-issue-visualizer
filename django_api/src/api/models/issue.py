@@ -134,7 +134,7 @@ class Issue(BaseNode):
 
         orm_issue.related_to.disconnect_all()
         if len(self.related) > 0:
-            related_sub_requirement_names = [rel['subRequirement'] for rel in self.related]
+            related_sub_requirement_names = set([rel['subRequirement'] for rel in self.related])
             related_sub_requirements = SubRequirement.OrmClass.get_by_title(*related_sub_requirement_names)
             if len(related_sub_requirements) < len(related_sub_requirement_names):
                 # check which sub_requirements were not found

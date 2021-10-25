@@ -78,6 +78,18 @@
                 ></v-text-field>
               </v-col>
             </v-row>
+            <v-row dense>
+              <v-col cols="12">
+                <v-select
+                    outlined
+                    dense
+                    label="Aggregation level"
+                    :items="constant.kinds"
+                    v-model="queries.aggregationLevel"
+                >
+                </v-select>
+              </v-col>
+            </v-row>
           </v-form>
         </v-card-text>
         <v-card-actions>
@@ -91,7 +103,7 @@
           <v-btn
               color="blue darken-1"
               text
-              @click="this.dialog=false"
+              @click="dialog=false"
           >
             Cancel
           </v-btn>
@@ -127,7 +139,8 @@ function createEmptyRelatedItem() {
 export function createEmptyFilter() {
   return {
     containedText: null,
-    related: [createEmptyRelatedItem()]
+    related: [createEmptyRelatedItem()],
+    aggregationLevel: null,
   }
 }
 
@@ -139,6 +152,16 @@ export default {
       principlesRequirementsMap: principlesRequirementsMap,
       requirementsSubrequirementsMap: requirementsSubrequirementsMap,
       principles: ethicalPrinciples,
+      kinds: [{
+        value: "SubRequirement",
+        text: "Sub-Requirement"
+      }, {
+        value: "KeyRequirement",
+        text: "Key-Requirement"
+      }, {
+        value: "EthicalPrinciple",
+        text: "Ethical Principle"
+      }]
     },
     queries: createEmptyFilter(),
   }),

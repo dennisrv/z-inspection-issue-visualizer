@@ -29,13 +29,9 @@ function getAll() {
     return no_auth.get('/nodes')
 }
 
-function getFiltered(searchText, related) {
+function getFiltered(issueFilter) {
     return no_auth.get('/nodes', {
-        params:
-            {
-                searchText: searchText,
-                related: related
-            }
+        params: issueFilter,
     })
 }
 

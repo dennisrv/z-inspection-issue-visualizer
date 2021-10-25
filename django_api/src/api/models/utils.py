@@ -14,7 +14,7 @@ CLASSES_BY_NAME = {
 CLASS_LABELS = frozenset(CLASSES_BY_NAME.keys())
 
 
-def filter_issues(contains_text=None, titles_of_related_nodes=None):
+def filter_issues(contains_text=None, titles_of_related_nodes=None, aggregation_level=None):
     """
     Filter issues, so that only issues which contain seleceted text in either their title or description
     along with sub-requirements, key-requirements and ethical issues that match the related nodes are selected
@@ -27,17 +27,24 @@ def filter_issues(contains_text=None, titles_of_related_nodes=None):
     :param contains_text: text to filter issues for, can appear either in title or description
     :param titles_of_related_nodes: related principles / requirements to filter for,
     if multiple are given, issues can relate to any of them
+    :param aggregation_level: all non-issue nodes with lower level will not be returned
     :return: Sub-graph that matches the selection criteria
     """
     if titles_of_related_nodes is None:
         titles_of_related_nodes = list()
 
+    if aggregation_level is not None and aggregation_level not in ["SubRequirement", "KeyRequirement", "EthicalPrinciple"]:
+        print(f"Unknown aggregation level '{aggregation_level}'. Setting to 'SubRequirement'")
+        aggregation_level = "SubRequirement"
+
     # shortcut: return everything
-    if contains_text is None and len(titles_of_related_nodes) == 0:
+    if contains_text is None and len(titles_of_related_nodes) == 0 and aggregation_level in [None, "SubRequirement"]:
         return EthicalPrinciple.get_all() + KeyRequirement.get_all() + SubRequirement.get_all() + Issue.get_all()
 
-    query = "match p = (i: Issue) -[:RELATED_TO*0..]-> (m) -[:RELATED_TO*0..]-> (o) " \
+    query = f"match p = (i: Issue) -[:RELATED_TO*0..]-> (m) -[:RELATED_TO*0..]-> (o) " \
             "\nwhere not i.is_deleted"
+    if aggregation_level is not None:
+        query += f"\nand m:{aggregation_level}"
     num_related = len(titles_of_related_nodes)
     query_params = {
         f"title{i}": v
@@ -50,7 +57,14 @@ def filter_issues(contains_text=None, titles_of_related_nodes=None):
     if contains_text is not None:
         query = query + "\nand (i.title CONTAINS {contains_text} or i.description CONTAINS {contains_text})"
 
-    query = query + "\nreturn p"
+    if aggregation_level is not None:
+        # add temporary connections to higher level nodes
+        query += "\n merge (i) -[r:RELATED_TO]-> (m) " \
+                 "\n with i, r, m " \
+                 "\n match p = (i) -[r]-> (m) -[:RELATED_TO*0..]-> (o)" \
+                 "\n delete r"
+
+    query += "\n return p"
 
     res, _ = db.cypher_query(query, params=query_params)
 
