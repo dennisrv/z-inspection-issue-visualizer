@@ -86,3 +86,6 @@ appear, stop PyCharm process, type `wsl --shutdown` in PowerShell and restart Py
 instead of `src.config.settings.py`).
 The settings file can be set via `--settings` option of the `manage.py` script or via
 the environment variable `DJANGO_SETTINGS_MODULE`.
+4. If running docker on windows make sure to uncheck `Use Docker Compose V2` in settings
+5. In case of problems with neo4j authentication delete the files `auth` and `auth.ini` 
+in `${NEO4J_DATA_DIR}/data/dbms`

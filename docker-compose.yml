@@ -11,7 +11,7 @@ services:
     environment:
       # the var=${var} is required to pass env variables from env file
       # to the compose file, otherwise they are not set in the container
-      - NEO4J_auth=${NEO4J_USER}/${NEO4J_PASS}
+      - NEO4J_AUTH=${NEO4J_USER}/${NEO4J_PASS}
       - NEO4J_dbms_logs_debug_level=${NEO4J_dbms_logs_debug_level}
       - NEO4J_dbms_connector_https_advertised__address=0.0.0.0:7473
       - NEO4J_dbms_connector_http_advertised__address=0.0.0.0:7474
