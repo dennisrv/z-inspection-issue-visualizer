@@ -153,6 +153,9 @@ export default {
       requirementsSubrequirementsMap: requirementsSubrequirementsMap,
       principles: ethicalPrinciples,
       kinds: [{
+        value: null,
+        text: "Show all"
+      }, {
         value: "SubRequirement",
         text: "Sub-Requirement"
       }, {

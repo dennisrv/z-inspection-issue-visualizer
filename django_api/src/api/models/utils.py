@@ -33,36 +33,50 @@ def filter_issues(contains_text=None, titles_of_related_nodes=None, aggregation_
     if titles_of_related_nodes is None:
         titles_of_related_nodes = list()
 
+    # shortcut: return everything
+    if contains_text is None and len(titles_of_related_nodes) == 0 and aggregation_level is None:
+        return EthicalPrinciple.get_all() + KeyRequirement.get_all() + SubRequirement.get_all() + Issue.get_all()
+
     if aggregation_level is not None and aggregation_level not in ["SubRequirement", "KeyRequirement", "EthicalPrinciple"]:
         print(f"Unknown aggregation level '{aggregation_level}'. Setting to 'SubRequirement'")
         aggregation_level = "SubRequirement"
 
-    # shortcut: return everything
-    if contains_text is None and len(titles_of_related_nodes) == 0 and aggregation_level in [None, "SubRequirement"]:
-        return EthicalPrinciple.get_all() + KeyRequirement.get_all() + SubRequirement.get_all() + Issue.get_all()
-
+    query_params = dict()
     query = f"match p = (i: Issue) -[:RELATED_TO*0..]-> (m) -[:RELATED_TO*0..]-> (o) " \
             "\nwhere not i.is_deleted"
+
     if aggregation_level is not None:
         query += f"\nand m:{aggregation_level}"
-    num_related = len(titles_of_related_nodes)
-    query_params = {
-        f"title{i}": v
-        for i, v in enumerate(titles_of_related_nodes)
-    }
-    query_params['contains_text'] = contains_text
-    if num_related > 0:
-        query = query + "\nand (" + " or ".join([f"m.title = {{title{i}}}" for i in range(num_related)]) + ")"
+
+    if len(titles_of_related_nodes) > 0:
+        for i, v in enumerate(titles_of_related_nodes):
+            query_params[f"title{i}"] = v
+
+        # query contains m.title = {title1}, and {title1} will be replaced with
+        # the value from the query parameters
+        # this is the neo4j way of prepared statements to guard against injections
+        query = query + "\nand (" + " or ".join([f"m.title = {{title{i}}}" for i in range(len(titles_of_related_nodes))]) + ")"
 
     if contains_text is not None:
         query = query + "\nand (i.title CONTAINS {contains_text} or i.description CONTAINS {contains_text})"
+        query_params['contains_text'] = contains_text
 
     if aggregation_level is not None:
         # add temporary connections to higher level nodes
-        query += "\n merge (i) -[r:RELATED_TO]-> (m) " \
-                 "\n with i, r, m " \
-                 "\n match p = (i) -[r]-> (m) -[:RELATED_TO*0..]-> (o)" \
-                 "\n delete r"
+        query += \
+            "\n merge (i) -[r:RELATED_TO]-> (m) " \
+            "\n with i, r, m " \
+            "\n match p = (i) -[r]-> (m) -[:RELATED_TO*0..]-> (o)" \
+            "\n delete r"
+            # the delete removes the previously connected edge again
+
+        # if nodes are not filtered for text or a specific related requirement,
+        # we simply aggregate them by their aggregation_level for higher-level overview
+        if contains_text is None and len(titles_of_related_nodes) == 0:
+            query += \
+                "\n return p" \
+                "\n UNION ALL" \
+                f"\n match p = (m:{aggregation_level}) -[:RELATED_TO*0..]-> (o)"
 
     query += "\n return p"
 
